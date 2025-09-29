@@ -11,30 +11,30 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('register')
-  @ApiOperation({ summary: 'Регистрация нового пользователя' })
+  @ApiOperation({ summary: 'Register new user' })
   @ApiResponse({
     status: 201,
-    description: 'Пользователь успешно зарегистрирован',
+    description: 'User successfully registered',
     type: User
   })
   @ApiResponse({
     status: 409,
-    description: 'Пользователь с таким email уже существует'
+    description: 'User with this email already exists'
   })
   async register(@Body() createUserDto: CreateUserDto): Promise<User> {
     return this.authService.register(createUserDto);
   }
 
   @Post('login')
-  @ApiOperation({ summary: 'Вход в систему' })
+  @ApiOperation({ summary: 'User login' })
   @ApiResponse({
     status: 200,
-    description: 'Успешный вход в систему',
+    description: 'Successful login',
     type: LoginResponseDto
   })
   @ApiResponse({
     status: 401,
-    description: 'Неверный email или пароль'
+    description: 'Invalid email or password'
   })
   async login(@Body() loginDto: LoginDto): Promise<LoginResponseDto> {
     return this.authService.login(loginDto);
@@ -43,15 +43,15 @@ export class AuthController {
   @Get('profile')
   @UseGuards(JwtAuthGuard) // Требуется авторизация
   @ApiBearerAuth() // Указываем, что нужен Bearer token в Swagger
-  @ApiOperation({ summary: 'Получение профиля текущего пользователя' })
+  @ApiOperation({ summary: 'Get current user profile' })
   @ApiResponse({
     status: 200,
-    description: 'Профиль пользователя',
+    description: 'User profile',
     type: User
   })
   @ApiResponse({
     status: 401,
-    description: 'Не авторизован'
+    description: 'Unauthorized'
   })
   async getProfile(@Req() req: any): Promise<User> {
     // req.user устанавливается JWT Guard'ом после проверки токена

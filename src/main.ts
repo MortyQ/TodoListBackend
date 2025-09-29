@@ -37,12 +37,12 @@ async function bootstrap() {
     .setDescription('Todo Backend API built with NestJS + TypeScript + Mongoose for frontend developers learning')
     .setVersion('1.0')
     .addBearerAuth() // поддержка JWT токенов в Swagger UI
-    .addTag('Authentication', 'Регистрация, вход и получение профиля')
-    .addTag('Users', 'Управление пользователями (только админ)')
-    .addTag('Profile', 'Управление своим профилем')
-    .addTag('Lists', 'Управление списками задач')
-    .addTag('Tasks', 'Управление задачами')
-    .addTag('Health', 'Проверка работоспособности API')
+    .addTag('Authentication', 'Registration, login and profile management')
+    .addTag('Users', 'User management (admin only)')
+    .addTag('Profile', 'Profile management')
+    .addTag('Lists', 'Todo lists management')
+    .addTag('Tasks', 'Tasks management')
+    .addTag('Health', 'API health check')
     .build();
 
   const document = SwaggerModule.createDocument(app, swaggerConfig);

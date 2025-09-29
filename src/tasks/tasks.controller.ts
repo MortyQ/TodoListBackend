@@ -15,19 +15,19 @@ export class TasksController {
 
   // Создание задачи в конкретном списке
   @Post('/lists/:listId/tasks')
-  @ApiOperation({ summary: 'Создание новой задачи в списке' })
+  @ApiOperation({ summary: 'Create new task in list' })
   @ApiResponse({
     status: 201,
-    description: 'Задача успешно создана',
+    description: 'Task successfully created',
     type: Task
   })
   @ApiResponse({
     status: 404,
-    description: 'Список не найден'
+    description: 'List not found'
   })
   @ApiResponse({
     status: 403,
-    description: 'Доступ запрещен - не ваш список'
+    description: 'Access denied - not your list'
   })
   async create(
     @Param('listId') listId: string,
@@ -39,23 +39,23 @@ export class TasksController {
 
   // Получение всех задач в списке с фильтрами
   @Get('/lists/:listId/tasks')
-  @ApiOperation({ summary: 'Получение всех задач в списке с фильтрами' })
-  @ApiQuery({ name: 'status', required: false, description: 'Фильтр по статусу' })
-  @ApiQuery({ name: 'tag', required: false, description: 'Фильтр по тегу' })
-  @ApiQuery({ name: 'dueFrom', required: false, description: 'Срок выполнения от (ISO дата)' })
-  @ApiQuery({ name: 'dueTo', required: false, description: 'Срок выполнения до (ISO дата)' })
-  @ApiQuery({ name: 'q', required: false, description: 'Поиск по тексту' })
+  @ApiOperation({ summary: 'Get all tasks in list with filters' })
+  @ApiQuery({ name: 'status', required: false, description: 'Filter by status' })
+  @ApiQuery({ name: 'tag', required: false, description: 'Filter by tag' })
+  @ApiQuery({ name: 'dueFrom', required: false, description: 'Due date from (ISO date)' })
+  @ApiQuery({ name: 'dueTo', required: false, description: 'Due date to (ISO date)' })
+  @ApiQuery({ name: 'q', required: false, description: 'Search in text' })
   @ApiResponse({
     status: 200,
-    description: 'Список задач с пагинацией и фильтрами'
+    description: 'Tasks list with pagination and filters'
   })
   @ApiResponse({
     status: 404,
-    description: 'Список не найден'
+    description: 'List not found'
   })
   @ApiResponse({
     status: 403,
-    description: 'Доступ запрещен - не ваш список'
+    description: 'Access denied - not your list'
   })
   async findAllInList(
     @Param('listId') listId: string,
@@ -74,19 +74,19 @@ export class TasksController {
 
   // Получение конкретной задачи
   @Get('/tasks/:taskId')
-  @ApiOperation({ summary: 'Получение конкретной задачи' })
+  @ApiOperation({ summary: 'Get specific task' })
   @ApiResponse({
     status: 200,
-    description: 'Детали задачи',
+    description: 'Task details',
     type: Task
   })
   @ApiResponse({
     status: 404,
-    description: 'Задача не найдена'
+    description: 'Task not found'
   })
   @ApiResponse({
     status: 403,
-    description: 'Доступ запрещен - задача из чужого списка'
+    description: 'Access denied - task from another user list'
   })
   async findOne(@Param('taskId') taskId: string, @Req() req: any) {
     return this.tasksService.findOne(taskId, req.user.id, req.user.role);
@@ -94,19 +94,19 @@ export class TasksController {
 
   // Обновление задачи
   @Patch('/tasks/:taskId')
-  @ApiOperation({ summary: 'Обновление задачи' })
+  @ApiOperation({ summary: 'Update task' })
   @ApiResponse({
     status: 200,
-    description: 'Задача успешно обновлена',
+    description: 'Task successfully updated',
     type: Task
   })
   @ApiResponse({
     status: 404,
-    description: 'Задача не найдена'
+    description: 'Task not found'
   })
   @ApiResponse({
     status: 403,
-    description: 'Доступ запрещен - задача из чужого списка'
+    description: 'Access denied - task from another user list'
   })
   async update(
     @Param('taskId') taskId: string,
@@ -118,19 +118,19 @@ export class TasksController {
 
   // Быстрое завершение задачи
   @Patch('/tasks/:taskId/complete')
-  @ApiOperation({ summary: 'Пометить задачу как завершенную' })
+  @ApiOperation({ summary: 'Mark task as completed' })
   @ApiResponse({
     status: 200,
-    description: 'Задача помечена как завершенная',
+    description: 'Task marked as completed',
     type: Task
   })
   @ApiResponse({
     status: 404,
-    description: 'Задача не найдена'
+    description: 'Task not found'
   })
   @ApiResponse({
     status: 403,
-    description: 'Доступ запрещен - задача из чужого списка'
+    description: 'Access denied - task from another user list'
   })
   async complete(@Param('taskId') taskId: string, @Req() req: any) {
     return this.tasksService.complete(taskId, req.user.id, req.user.role);
@@ -138,18 +138,18 @@ export class TasksController {
 
   // Мягкое удаление задачи
   @Delete('/tasks/:taskId')
-  @ApiOperation({ summary: 'Удаление задачи (мягкое удаление)' })
+  @ApiOperation({ summary: 'Delete task (soft delete)' })
   @ApiResponse({
     status: 200,
-    description: 'Задача успешно удалена'
+    description: 'Task successfully deleted'
   })
   @ApiResponse({
     status: 404,
-    description: 'Задача не найдена'
+    description: 'Task not found'
   })
   @ApiResponse({
     status: 403,
-    description: 'Доступ запрещен - задача из чужого списка'
+    description: 'Access denied - task from another user list'
   })
   async remove(@Param('taskId') taskId: string, @Req() req: any) {
     await this.tasksService.remove(taskId, req.user.id, req.user.role);

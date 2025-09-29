@@ -8,10 +8,10 @@ export class HealthController {
   constructor(private readonly healthService: HealthService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Проверка работоспособности API и подключения к базе данных' })
+  @ApiOperation({ summary: 'Check API health and database connection' })
   @ApiResponse({
     status: 200,
-    description: 'Система работает нормально',
+    description: 'System is working properly',
     schema: {
       type: 'object',
       properties: {
@@ -24,7 +24,7 @@ export class HealthController {
   })
   @ApiResponse({
     status: 503,
-    description: 'Проблемы с подключением к базе данных'
+    description: 'Database connection issues'
   })
   async check() {
     return this.healthService.check();

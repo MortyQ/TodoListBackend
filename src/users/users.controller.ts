@@ -18,15 +18,15 @@ export class UsersController {
   @Get()
   @UseGuards(RolesGuard)
   @Roles(UserRole.ADMIN)
-  @ApiOperation({ summary: 'Получение всех пользователей (только админ)' })
-  @ApiQuery({ name: 'q', required: false, description: 'Поиск по email' })
+  @ApiOperation({ summary: 'Get all users (admin only)' })
+  @ApiQuery({ name: 'q', required: false, description: 'Search by email' })
   @ApiResponse({
     status: 200,
-    description: 'Список пользователей с пагинацией'
+    description: 'Users list with pagination'
   })
   @ApiResponse({
     status: 403,
-    description: 'Доступ запрещен - требуется роль admin'
+    description: 'Access denied - admin role required'
   })
   async findAll(
     @Query() paginationDto: PaginationDto,
@@ -38,15 +38,15 @@ export class UsersController {
   @Get(':id')
   @UseGuards(RolesGuard)
   @Roles(UserRole.ADMIN)
-  @ApiOperation({ summary: 'Получение пользователя по ID (только админ)' })
+  @ApiOperation({ summary: 'Get user by ID (admin only)' })
   @ApiResponse({
     status: 200,
-    description: 'Профиль пользователя',
+    description: 'User profile',
     type: UserProfileDto
   })
   @ApiResponse({
     status: 404,
-    description: 'Пользователь не найден'
+    description: 'User not found'
   })
   async findOne(@Param('id') id: string) {
     return this.usersService.findOne(id);
@@ -55,15 +55,15 @@ export class UsersController {
   @Patch(':id/role')
   @UseGuards(RolesGuard)
   @Roles(UserRole.ADMIN)
-  @ApiOperation({ summary: 'Изменение роли пользователя (только админ)' })
+  @ApiOperation({ summary: 'Change user role (admin only)' })
   @ApiResponse({
     status: 200,
-    description: 'Роль пользователя изменена',
+    description: 'User role changed',
     type: UserProfileDto
   })
   @ApiResponse({
     status: 403,
-    description: 'Нельзя изменить свою роль'
+    description: 'Cannot change your own role'
   })
   async updateRole(
     @Param('id') id: string,
@@ -76,14 +76,14 @@ export class UsersController {
   @Delete(':id')
   @UseGuards(RolesGuard)
   @Roles(UserRole.ADMIN)
-  @ApiOperation({ summary: 'Удаление пользователя (только админ)' })
+  @ApiOperation({ summary: 'Delete user (admin only)' })
   @ApiResponse({
     status: 200,
-    description: 'Пользователь удален'
+    description: 'User deleted'
   })
   @ApiResponse({
     status: 403,
-    description: 'Нельзя удалить свой аккаунт'
+    description: 'Cannot delete your own account'
   })
   async remove(@Param('id') id: string, @Req() req: any) {
     await this.usersService.remove(id, req.user.id);
@@ -100,10 +100,10 @@ export class ProfileController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Получение своего профиля' })
+  @ApiOperation({ summary: 'Get own profile' })
   @ApiResponse({
     status: 200,
-    description: 'Профиль текущего пользователя',
+    description: 'Current user profile',
     type: UserProfileDto
   })
   async getProfile(@Req() req: any) {
@@ -111,10 +111,10 @@ export class ProfileController {
   }
 
   @Patch()
-  @ApiOperation({ summary: 'Обновление своего профиля' })
+  @ApiOperation({ summary: 'Update own profile' })
   @ApiResponse({
     status: 200,
-    description: 'Профиль обновлен',
+    description: 'Profile updated',
     type: UserProfileDto
   })
   async updateProfile(

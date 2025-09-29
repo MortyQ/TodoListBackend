@@ -13,10 +13,10 @@ export class ListsController {
   constructor(private readonly listsService: ListsService) {}
 
   @Post()
-  @ApiOperation({ summary: 'Создание нового списка' })
+  @ApiOperation({ summary: 'Create new list' })
   @ApiResponse({
     status: 201,
-    description: 'Список успешно создан',
+    description: 'List successfully created',
     type: ListResponseDto
   })
   async create(@Body() createListDto: CreateListDto, @Req() req: any) {
@@ -24,48 +24,48 @@ export class ListsController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Получение всех списков пользователя' })
+  @ApiOperation({ summary: 'Get all user lists' })
   @ApiResponse({
     status: 200,
-    description: 'Список всех списков пользователя с пагинацией'
+    description: 'User lists with pagination'
   })
   async findAll(@Query() paginationDto: PaginationDto, @Req() req: any) {
     return this.listsService.findAll(req.user.id, req.user.role, paginationDto);
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Получение конкретного списка' })
+  @ApiOperation({ summary: 'Get specific list' })
   @ApiResponse({
     status: 200,
-    description: 'Детали списка',
+    description: 'List details',
     type: ListResponseDto
   })
   @ApiResponse({
     status: 404,
-    description: 'Список не найден'
+    description: 'List not found'
   })
   @ApiResponse({
     status: 403,
-    description: 'Доступ запрещен - не ваш список'
+    description: 'Access denied - not your list'
   })
   async findOne(@Param('id') id: string, @Req() req: any) {
     return this.listsService.findOne(id, req.user.id, req.user.role);
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: 'Обновление списка' })
+  @ApiOperation({ summary: 'Update list' })
   @ApiResponse({
     status: 200,
-    description: 'Список успешно обновлен',
+    description: 'List successfully updated',
     type: ListResponseDto
   })
   @ApiResponse({
     status: 404,
-    description: 'Список не найден'
+    description: 'List not found'
   })
   @ApiResponse({
     status: 403,
-    description: 'Доступ запрещен - не ваш список'
+    description: 'Access denied - not your list'
   })
   async update(
     @Param('id') id: string,
@@ -76,18 +76,18 @@ export class ListsController {
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Удаление списка и всех его задач' })
+  @ApiOperation({ summary: 'Delete list and all its tasks' })
   @ApiResponse({
     status: 200,
-    description: 'Список и задачи успешно удалены'
+    description: 'List and tasks successfully deleted'
   })
   @ApiResponse({
     status: 404,
-    description: 'Список не найден'
+    description: 'List not found'
   })
   @ApiResponse({
     status: 403,
-    description: 'Доступ запрещен - не ваш список'
+    description: 'Access denied - not your list'
   })
   async remove(@Param('id') id: string, @Req() req: any) {
     await this.listsService.remove(id, req.user.id, req.user.role);
