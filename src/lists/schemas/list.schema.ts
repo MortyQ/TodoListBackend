@@ -10,8 +10,8 @@ import { User } from '../../users/schemas/user.schema';
 })
 export class List extends Document {
   @ApiProperty({
-    description: 'Название списка',
-    example: 'Рабочие задачи'
+    description: 'List title',
+    example: 'Work tasks'
   })
   @Prop({
     required: true,
@@ -21,7 +21,7 @@ export class List extends Document {
   title: string;
 
   @ApiProperty({
-    description: 'ID владельца списка',
+    description: 'List owner ID',
     example: '507f1f77bcf86cd799439011'
   })
   @Prop({
@@ -33,13 +33,13 @@ export class List extends Document {
   ownerId: Types.ObjectId | User;
 
   @ApiProperty({
-    description: 'Дата создания списка',
+    description: 'List creation date',
     example: '2023-01-01T00:00:00.000Z'
   })
   createdAt: Date;
 
   @ApiProperty({
-    description: 'Дата последнего обновления',
+    description: 'Last update date',
     example: '2023-01-01T00:00:00.000Z'
   })
   updatedAt: Date;

@@ -3,11 +3,11 @@ import { IsString, IsOptional, IsEnum, IsInt, IsArray, IsDateString, Length, Min
 import { Transform } from 'class-transformer';
 import { TaskStatus, TaskPriority } from '../schemas/task.schema';
 
-// DTO для создания новой задачи
+// DTO for creating a new task
 export class CreateTaskDto {
   @ApiProperty({
-    description: 'Название задачи',
-    example: 'Написать отчет',
+    description: 'Task title',
+    example: 'Write a report',
     maxLength: 200
   })
   @IsString()
@@ -15,8 +15,8 @@ export class CreateTaskDto {
   title: string;
 
   @ApiProperty({
-    description: 'Короткое описание задачи',
-    example: 'Подготовить месячный отчет по продажам',
+    description: 'Short task description',
+    example: 'Prepare monthly sales report',
     required: false,
     maxLength: 500
   })
@@ -26,8 +26,8 @@ export class CreateTaskDto {
   description?: string;
 
   @ApiProperty({
-    description: 'Расширенное описание задачи',
-    example: 'Детальный отчет должен включать анализ продаж...',
+    description: 'Extended task description',
+    example: 'Detailed report should include sales analysis...',
     required: false
   })
   @IsOptional()
@@ -35,7 +35,7 @@ export class CreateTaskDto {
   longDescription?: string;
 
   @ApiProperty({
-    description: 'Статус задачи',
+    description: 'Task status',
     example: TaskStatus.TODO,
     enum: TaskStatus,
     required: false
@@ -45,7 +45,7 @@ export class CreateTaskDto {
   status?: TaskStatus;
 
   @ApiProperty({
-    description: 'Приоритет задачи',
+    description: 'Task priority',
     example: TaskPriority.MEDIUM,
     enum: TaskPriority,
     required: false
@@ -55,8 +55,8 @@ export class CreateTaskDto {
   priority?: TaskPriority;
 
   @ApiProperty({
-    description: 'Теги задачи',
-    example: ['работа', 'срочно'],
+    description: 'Task tags',
+    example: ['work', 'urgent'],
     required: false,
     type: [String]
   })
@@ -66,7 +66,7 @@ export class CreateTaskDto {
   tags?: string[];
 
   @ApiProperty({
-    description: 'Срок выполнения задачи (ISO строка)',
+    description: 'Task due date (ISO string)',
     example: '2023-12-31T23:59:59.000Z',
     required: false
   })
@@ -75,7 +75,7 @@ export class CreateTaskDto {
   dueDate?: string;
 
   @ApiProperty({
-    description: 'Порядок задачи в списке',
+    description: 'Task order in list',
     example: 1,
     required: false
   })
@@ -86,11 +86,11 @@ export class CreateTaskDto {
   order?: number;
 }
 
-// DTO для обновления задачи (все поля опциональны)
+// DTO for updating a task (all fields are optional)
 export class UpdateTaskDto {
   @ApiProperty({
-    description: 'Название задачи',
-    example: 'Обновленное название задачи',
+    description: 'Task title',
+    example: 'Updated task title',
     required: false,
     maxLength: 200
   })
@@ -100,8 +100,8 @@ export class UpdateTaskDto {
   title?: string;
 
   @ApiProperty({
-    description: 'Короткое описание задачи',
-    example: 'Обновленное описание',
+    description: 'Short task description',
+    example: 'Updated description',
     required: false,
     maxLength: 500
   })
@@ -111,8 +111,8 @@ export class UpdateTaskDto {
   description?: string;
 
   @ApiProperty({
-    description: 'Расширенное описание задачи',
-    example: 'Обновленное детальное описание...',
+    description: 'Extended task description',
+    example: 'Updated detailed description...',
     required: false
   })
   @IsOptional()
@@ -120,7 +120,7 @@ export class UpdateTaskDto {
   longDescription?: string;
 
   @ApiProperty({
-    description: 'Статус задачи',
+    description: 'Task status',
     example: TaskStatus.IN_PROGRESS,
     enum: TaskStatus,
     required: false
@@ -130,7 +130,7 @@ export class UpdateTaskDto {
   status?: TaskStatus;
 
   @ApiProperty({
-    description: 'Приоритет задачи',
+    description: 'Task priority',
     example: TaskPriority.HIGH,
     enum: TaskPriority,
     required: false
@@ -140,8 +140,8 @@ export class UpdateTaskDto {
   priority?: TaskPriority;
 
   @ApiProperty({
-    description: 'Теги задачи',
-    example: ['работа', 'обновлено'],
+    description: 'Task tags',
+    example: ['work', 'updated'],
     required: false,
     type: [String]
   })
@@ -151,7 +151,7 @@ export class UpdateTaskDto {
   tags?: string[];
 
   @ApiProperty({
-    description: 'Срок выполнения задачи (ISO строка)',
+    description: 'Task due date (ISO string)',
     example: '2023-12-31T23:59:59.000Z',
     required: false
   })
@@ -160,7 +160,7 @@ export class UpdateTaskDto {
   dueDate?: string;
 
   @ApiProperty({
-    description: 'Порядок задачи в списке',
+    description: 'Task order in list',
     example: 2,
     required: false
   })
@@ -171,10 +171,10 @@ export class UpdateTaskDto {
   order?: number;
 }
 
-// DTO для фильтрации задач
+// DTO for filtering tasks
 export class TaskFiltersDto {
   @ApiProperty({
-    description: 'Фильтр по статусу',
+    description: 'Filter by status',
     example: TaskStatus.TODO,
     enum: TaskStatus,
     required: false
@@ -184,8 +184,8 @@ export class TaskFiltersDto {
   status?: TaskStatus;
 
   @ApiProperty({
-    description: 'Фильтр по тегу',
-    example: 'работа',
+    description: 'Filter by tag',
+    example: 'work',
     required: false
   })
   @IsOptional()
@@ -193,7 +193,7 @@ export class TaskFiltersDto {
   tag?: string;
 
   @ApiProperty({
-    description: 'Срок выполнения от (ISO строка)',
+    description: 'Due date from (ISO string)',
     example: '2023-01-01T00:00:00.000Z',
     required: false
   })
@@ -202,7 +202,7 @@ export class TaskFiltersDto {
   dueFrom?: string;
 
   @ApiProperty({
-    description: 'Срок выполнения до (ISO строка)',
+    description: 'Due date to (ISO string)',
     example: '2023-12-31T23:59:59.000Z',
     required: false
   })
@@ -211,8 +211,8 @@ export class TaskFiltersDto {
   dueTo?: string;
 
   @ApiProperty({
-    description: 'Поиск по названию, описанию или расширенному описанию',
-    example: 'отчет',
+    description: 'Search in title, description or long description',
+    example: 'report',
     required: false
   })
   @IsOptional()

@@ -4,14 +4,14 @@ import { IsEmail, IsString, MinLength, IsOptional } from 'class-validator';
 // DTO для регистрации нового пользователя
 export class CreateUserDto {
   @ApiProperty({
-    description: 'Email пользователя',
+    description: 'User email',
     example: 'user@example.com'
   })
   @IsEmail({}, { message: 'Email must be valid' })
   email: string;
 
   @ApiProperty({
-    description: 'Пароль (минимум 8 символов)',
+    description: 'Password (minimum 8 characters)',
     example: 'SecurePass123',
     minLength: 8
   })
@@ -20,7 +20,7 @@ export class CreateUserDto {
   password: string;
 
   @ApiProperty({
-    description: 'Имя пользователя (опционально)',
+    description: 'User name (optional)',
     example: 'John Doe',
     required: false
   })
@@ -32,14 +32,14 @@ export class CreateUserDto {
 // DTO для входа в систему
 export class LoginDto {
   @ApiProperty({
-    description: 'Email пользователя',
+    description: 'User email',
     example: 'user@example.com'
   })
   @IsEmail({}, { message: 'Email must be valid' })
   email: string;
 
   @ApiProperty({
-    description: 'Пароль пользователя',
+    description: 'User password',
     example: 'SecurePass123'
   })
   @IsString()
@@ -49,7 +49,7 @@ export class LoginDto {
 // DTO для ответа при успешном логине
 export class LoginResponseDto {
   @ApiProperty({
-    description: 'JWT токен для авторизации',
+    description: 'JWT token for authorization',
     example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
   })
   accessToken: string;

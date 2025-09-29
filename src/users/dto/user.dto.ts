@@ -5,7 +5,7 @@ import { UserRole } from '../schemas/user.schema';
 // DTO для обновления профиля пользователя (самим пользователем)
 export class UpdateProfileDto {
   @ApiProperty({
-    description: 'Имя пользователя',
+    description: 'User name',
     example: 'John Doe Updated',
     required: false
   })
@@ -17,7 +17,7 @@ export class UpdateProfileDto {
 // DTO для изменения роли пользователя (только админом)
 export class UpdateUserRoleDto {
   @ApiProperty({
-    description: 'Новая роль пользователя',
+    description: 'New user role',
     example: UserRole.ADMIN,
     enum: UserRole
   })
@@ -28,33 +28,33 @@ export class UpdateUserRoleDto {
 // DTO для получения профиля пользователя (ответ)
 export class UserProfileDto {
   @ApiProperty({
-    description: 'ID пользователя',
+    description: 'User ID',
     example: '507f1f77bcf86cd799439011'
   })
   id: string;
 
   @ApiProperty({
-    description: 'Email пользователя',
+    description: 'User email',
     example: 'user@example.com'
   })
   email: string;
 
   @ApiProperty({
-    description: 'Имя пользователя',
+    description: 'User name',
     example: 'John Doe',
     required: false
   })
   name?: string;
 
   @ApiProperty({
-    description: 'Роль пользователя',
+    description: 'User role',
     example: UserRole.USER,
     enum: UserRole
   })
   role: UserRole;
 
   @ApiProperty({
-    description: 'Дата создания аккаунта',
+    description: 'Account creation date',
     example: '2023-01-01T00:00:00.000Z'
   })
   createdAt: Date;

@@ -15,7 +15,7 @@ export enum UserRole {
 })
 export class User extends Document {
   @ApiProperty({
-    description: 'Email пользователя (уникальный)',
+    description: 'User email (unique)',
     example: 'user@example.com'
   })
   @Prop({
@@ -28,7 +28,7 @@ export class User extends Document {
   email: string;
 
   @ApiProperty({
-    description: 'Имя пользователя',
+    description: 'User name',
     example: 'John Doe',
     required: false
   })
@@ -46,7 +46,7 @@ export class User extends Document {
   passwordHash: string;
 
   @ApiProperty({
-    description: 'Роль пользователя',
+    description: 'User role',
     example: UserRole.USER,
     enum: UserRole
   })
@@ -58,13 +58,13 @@ export class User extends Document {
   role: UserRole;
 
   @ApiProperty({
-    description: 'Дата создания аккаунта',
+    description: 'Account creation date',
     example: '2023-01-01T00:00:00.000Z'
   })
   createdAt: Date;
 
   @ApiProperty({
-    description: 'Дата последнего обновления',
+    description: 'Last update date',
     example: '2023-01-01T00:00:00.000Z'
   })
   updatedAt: Date;

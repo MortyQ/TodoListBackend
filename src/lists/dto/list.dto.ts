@@ -4,8 +4,8 @@ import { IsString, Length, IsOptional } from 'class-validator';
 // DTO для создания нового списка
 export class CreateListDto {
   @ApiProperty({
-    description: 'Название списка',
-    example: 'Рабочие задачи',
+    description: 'List title',
+    example: 'Work tasks',
     minLength: 1,
     maxLength: 100
   })
@@ -17,8 +17,8 @@ export class CreateListDto {
 // DTO для обновления списка
 export class UpdateListDto {
   @ApiProperty({
-    description: 'Название списка',
-    example: 'Обновленные рабочие задачи',
+    description: 'List title',
+    example: 'Updated work tasks',
     required: false,
     minLength: 1,
     maxLength: 100
@@ -32,31 +32,31 @@ export class UpdateListDto {
 // DTO для ответа со списком
 export class ListResponseDto {
   @ApiProperty({
-    description: 'ID списка',
+    description: 'List ID',
     example: '507f1f77bcf86cd799439011'
   })
   id: string;
 
   @ApiProperty({
-    description: 'Название списка',
-    example: 'Рабочие задачи'
+    description: 'List title',
+    example: 'Work tasks'
   })
   title: string;
 
   @ApiProperty({
-    description: 'ID владельца списка',
+    description: 'List owner ID',
     example: '507f1f77bcf86cd799439012'
   })
   ownerId: string;
 
   @ApiProperty({
-    description: 'Дата создания',
+    description: 'Creation date',
     example: '2023-01-01T00:00:00.000Z'
   })
   createdAt: Date;
 
   @ApiProperty({
-    description: 'Дата обновления',
+    description: 'Last update date',
     example: '2023-01-01T00:00:00.000Z'
   })
   updatedAt: Date;

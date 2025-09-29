@@ -25,7 +25,7 @@ export enum TaskPriority {
 })
 export class Task extends Document {
   @ApiProperty({
-    description: 'ID списка, к которому принадлежит задача',
+    description: 'ID of the list this task belongs to',
     example: '507f1f77bcf86cd799439011'
   })
   @Prop({
@@ -37,8 +37,8 @@ export class Task extends Document {
   listId: Types.ObjectId | List;
 
   @ApiProperty({
-    description: 'Название задачи',
-    example: 'Написать отчет'
+    description: 'Task title',
+    example: 'Write a report'
   })
   @Prop({
     required: true,
@@ -48,8 +48,8 @@ export class Task extends Document {
   title: string;
 
   @ApiProperty({
-    description: 'Короткое описание задачи',
-    example: 'Подготовить месячный отчет по продажам',
+    description: 'Short task description',
+    example: 'Prepare monthly sales report',
     required: false
   })
   @Prop({
@@ -60,8 +60,8 @@ export class Task extends Document {
   description?: string;
 
   @ApiProperty({
-    description: 'Расширенное описание задачи (для отдельной страницы)',
-    example: 'Детальный отчет должен включать...',
+    description: 'Extended task description (for detailed task page)',
+    example: 'Detailed report should include sales analysis and forecasts...',
     required: false
   })
   @Prop({
@@ -71,7 +71,7 @@ export class Task extends Document {
   longDescription?: string;
 
   @ApiProperty({
-    description: 'Статус задачи',
+    description: 'Task status',
     example: TaskStatus.TODO,
     enum: TaskStatus
   })
@@ -84,7 +84,7 @@ export class Task extends Document {
   status: TaskStatus;
 
   @ApiProperty({
-    description: 'Приоритет задачи',
+    description: 'Task priority',
     example: TaskPriority.MEDIUM,
     enum: TaskPriority
   })
@@ -97,7 +97,7 @@ export class Task extends Document {
   priority: TaskPriority;
 
   @ApiProperty({
-    description: 'Порядок задачи в списке (для drag&drop)',
+    description: 'Task order in list (for drag&drop)',
     example: 1,
     required: false
   })
@@ -108,8 +108,8 @@ export class Task extends Document {
   order?: number;
 
   @ApiProperty({
-    description: 'Теги задачи',
-    example: ['работа', 'срочно'],
+    description: 'Task tags',
+    example: ['work', 'urgent'],
     required: false,
     type: [String]
   })
@@ -121,7 +121,7 @@ export class Task extends Document {
   tags?: string[];
 
   @ApiProperty({
-    description: 'Срок выполнения задачи',
+    description: 'Task due date',
     example: '2023-12-31T23:59:59.000Z',
     required: false
   })
@@ -132,7 +132,7 @@ export class Task extends Document {
   dueDate?: Date;
 
   @ApiProperty({
-    description: 'Дата завершения задачи',
+    description: 'Task completion date',
     example: '2023-01-15T10:30:00.000Z',
     required: false
   })
@@ -143,7 +143,7 @@ export class Task extends Document {
   completedAt?: Date;
 
   @ApiProperty({
-    description: 'Дата мягкого удаления задачи (soft delete)',
+    description: 'Soft delete timestamp',
     example: null,
     required: false
   })
@@ -155,13 +155,13 @@ export class Task extends Document {
   deletedAt?: Date;
 
   @ApiProperty({
-    description: 'Дата создания задачи',
+    description: 'Task creation date',
     example: '2023-01-01T00:00:00.000Z'
   })
   createdAt: Date;
 
   @ApiProperty({
-    description: 'Дата последнего обновления',
+    description: 'Last update date',
     example: '2023-01-01T00:00:00.000Z'
   })
   updatedAt: Date;

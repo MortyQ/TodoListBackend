@@ -23,7 +23,7 @@ export enum TaskSortFields {
 
 export class PaginationDto {
   @ApiProperty({
-    description: 'Количество записей для получения',
+    description: 'Number of records to retrieve',
     example: 20,
     minimum: 1,
     maximum: 100,
@@ -37,7 +37,7 @@ export class PaginationDto {
   limit?: number = 20;
 
   @ApiProperty({
-    description: 'Смещение от начала (для пагинации)',
+    description: 'Offset from the beginning (for pagination)',
     example: 0,
     minimum: 0,
     maximum: 10000,
@@ -51,7 +51,7 @@ export class PaginationDto {
   offset?: number = 0;
 
   @ApiProperty({
-    description: 'Поле для сортировки',
+    description: 'Field to sort by',
     example: 'createdAt',
     enum: CommonSortFields,
     required: false
@@ -61,7 +61,7 @@ export class PaginationDto {
   sort?: CommonSortFields = CommonSortFields.CREATED_AT;
 
   @ApiProperty({
-    description: 'Порядок сортировки',
+    description: 'Sort order',
     example: 'desc',
     enum: SortOrder,
     required: false
@@ -74,7 +74,7 @@ export class PaginationDto {
 // Специальный DTO для пагинации задач с расширенными полями сортировки
 export class TaskPaginationDto {
   @ApiProperty({
-    description: 'Количество записей для получения',
+    description: 'Number of records to retrieve',
     example: 20,
     minimum: 1,
     maximum: 100,
@@ -88,7 +88,7 @@ export class TaskPaginationDto {
   limit?: number = 20;
 
   @ApiProperty({
-    description: 'Смещение от начала (для пагинации)',
+    description: 'Offset from the beginning (for pagination)',
     example: 0,
     minimum: 0,
     maximum: 10000,
@@ -102,7 +102,7 @@ export class TaskPaginationDto {
   offset?: number = 0;
 
   @ApiProperty({
-    description: 'Поле для сортировки задач',
+    description: 'Field to sort tasks by',
     example: 'createdAt',
     enum: TaskSortFields,
     required: false
@@ -112,7 +112,7 @@ export class TaskPaginationDto {
   sort?: TaskSortFields = TaskSortFields.CREATED_AT;
 
   @ApiProperty({
-    description: 'Порядок сортировки',
+    description: 'Sort order',
     example: 'desc',
     enum: SortOrder,
     required: false
