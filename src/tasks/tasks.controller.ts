@@ -7,14 +7,13 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Task } from './schemas/task.schema';
 
 @ApiTags('Tasks')
-@Controller() // добавляю обязательный декоратор @Controller()
-@UseGuards(JwtAuthGuard) // все эндпоинты требуют авторизации
+@Controller('tasks')
+@UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
 
-  // Создание задачи в конкретном списке
-  @Post('/lists/:listId/tasks')
+  @Post('/lists/:listId')
   @ApiOperation({ summary: 'Create new task in list' })
   @ApiResponse({
     status: 201,
@@ -37,8 +36,7 @@ export class TasksController {
     return this.tasksService.create(listId, createTaskDto, req.user.id, req.user.role);
   }
 
-  // Получение всех задач в списке с фильтрами
-  @Get('/lists/:listId/tasks')
+  @Get('/lists/:listId')
   @ApiOperation({ summary: 'Get all tasks in list with filters' })
   @ApiQuery({ name: 'status', required: false, description: 'Filter by status' })
   @ApiQuery({ name: 'tag', required: false, description: 'Filter by tag' })
@@ -73,7 +71,7 @@ export class TasksController {
   }
 
   // Получение конкретной задачи
-  @Get('/tasks/:taskId')
+  @Get('/:taskId')
   @ApiOperation({ summary: 'Get specific task' })
   @ApiResponse({
     status: 200,
@@ -92,8 +90,7 @@ export class TasksController {
     return this.tasksService.findOne(taskId, req.user.id, req.user.role);
   }
 
-  // Обновление задачи
-  @Patch('/tasks/:taskId')
+  @Patch('/:taskId')
   @ApiOperation({ summary: 'Update task' })
   @ApiResponse({
     status: 200,
@@ -117,7 +114,7 @@ export class TasksController {
   }
 
   // Быстрое завершение задачи
-  @Patch('/tasks/:taskId/complete')
+  @Patch('/:taskId/complete')
   @ApiOperation({ summary: 'Mark task as completed' })
   @ApiResponse({
     status: 200,
@@ -136,8 +133,7 @@ export class TasksController {
     return this.tasksService.complete(taskId, req.user.id, req.user.role);
   }
 
-  // Мягкое удаление задачи
-  @Delete('/tasks/:taskId')
+  @Delete('/:taskId')
   @ApiOperation({ summary: 'Delete task (soft delete)' })
   @ApiResponse({
     status: 200,

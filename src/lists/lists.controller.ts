@@ -7,7 +7,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @ApiTags('Lists')
 @Controller('lists')
-@UseGuards(JwtAuthGuard) // все эндпоинты требуют авторизации
+@UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 export class ListsController {
   constructor(private readonly listsService: ListsService) {}
@@ -33,7 +33,7 @@ export class ListsController {
     return this.listsService.findAll(req.user.id, req.user.role, paginationDto);
   }
 
-  @Get(':id')
+  @Get(':listId')
   @ApiOperation({ summary: 'Get specific list' })
   @ApiResponse({
     status: 200,
@@ -52,7 +52,7 @@ export class ListsController {
     return this.listsService.findOne(id, req.user.id, req.user.role);
   }
 
-  @Patch(':id')
+  @Patch(':listId')
   @ApiOperation({ summary: 'Update list' })
   @ApiResponse({
     status: 200,
@@ -68,14 +68,14 @@ export class ListsController {
     description: 'Access denied - not your list'
   })
   async update(
-    @Param('id') id: string,
+    @Param('listId') id: string,
     @Body() updateListDto: UpdateListDto,
     @Req() req: any,
   ) {
     return this.listsService.update(id, updateListDto, req.user.id, req.user.role);
   }
 
-  @Delete(':id')
+  @Delete(':listId')
   @ApiOperation({ summary: 'Delete list and all its tasks' })
   @ApiResponse({
     status: 200,

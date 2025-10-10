@@ -7,36 +7,33 @@ import { AppConfigService } from './config/app-config.service';
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
 
-  // Создаем NestJS приложение
   const app = await NestFactory.create(AppModule);
 
-  // Получаем сервис конфигурации
+  app.setGlobalPrefix('api');
+
   const configService = app.get(AppConfigService);
 
-  // Настраиваем глобальную валидацию данных
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true, // удаляет поля, не описанные в DTO
-      forbidNonWhitelisted: true, // выбрасывает ошибку при лишних полях
-      transform: true, // автоматически преобразует типы (string -> number и т.д.)
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
       transformOptions: {
-        enableImplicitConversion: true, // автоматическое преобразование типов
+        enableImplicitConversion: true,
       },
     }),
   );
 
-  // Настраиваем CORS для фронтенд приложений
   app.enableCors({
-    origin: configService.corsOrigins, // домены из конфигурации
-    credentials: true, // поддержка cookies
+    origin: configService.corsOrigins,
+    credentials: true,
   });
 
-  // Настраиваем Swagger документацию
   const swaggerConfig = new DocumentBuilder()
     .setTitle('MuzalovTodoApp')
     .setDescription('Todo Backend API built with NestJS + TypeScript + Mongoose for frontend developers learning')
     .setVersion('1.0')
-    .addBearerAuth() // поддержка JWT токенов в Swagger UI
+    .addBearerAuth()
     .addTag('Authentication', 'Registration, login and profile management')
     .addTag('Users', 'User management (admin only)')
     .addTag('Profile', 'Profile management')
@@ -55,7 +52,6 @@ async function bootstrap() {
     `,
   });
 
-  // Запускаем сервер
   const port = configService.port;
   await app.listen(port);
 
@@ -65,7 +61,6 @@ async function bootstrap() {
   logger.log(`🔒 CORS origins: ${JSON.stringify(configService.corsOrigins)}`);
 }
 
-// Запускаем приложение и обрабатываем ошибки
 bootstrap().catch((error) => {
   Logger.error('Failed to start application', error, 'Bootstrap');
   process.exit(1);
