@@ -362,31 +362,166 @@ API повертає детальні помилки валідації:
    - `baseUrl`: `http://localhost:3000`
    - `accessToken`: автоматично заповниться після логіну
 
-## 🚀 Деплой (Railway/Render)
+## 🚀 Деплой на Render.com
 
-### Підготовка
+### Підготовка проекту
+Проект вже підготовлений до деплою! Перевірте наявність:
+- ✅ `render.yaml` - конфігурація для автоматичного деплою
+- ✅ `.node-version` - версія Node.js
+- ✅ `npm run start:prod` - production скрипт
+
+### Крок 1: Створіть MongoDB Atlas базу даних (безкоштовно)
+
+1. Зареєструйтесь на [MongoDB Atlas](https://cloud.mongodb.com)
+2. Створіть новий кластер (безкоштовний M0 Shared)
+3. Створіть користувача бази даних (Database Access):
+   - Username: `todoapp-user`
+   - Password: згенеруйте або створіть власний
+4. Додайте IP адресу (Network Access):
+   - Натисніть "Add IP Address"
+   - Виберіть "Allow Access from Anywhere" (0.0.0.0/0)
+5. Отримайте Connection String:
+   - Натисніть "Connect" → "Connect your application"
+   - Скопіюйте URI (виглядає як: `mongodb+srv://todoapp-user:<password>@cluster0.xxxxx.mongodb.net/`)
+   - Замініть `<password>` на реальний пароль
+
+### Крок 2: Підготовка репозиторію
+
 ```bash
-# Переконайтесь, що є npm scripts:
-npm run build    # створює папку dist/
-npm run start:prod    # запускає з dist/
+# Переконайтесь, що всі зміни збережено
+git add .
+git commit -m "Prepare for deployment"
+git push origin main
 ```
 
-### Змінні оточення на сервері
-```env
-PORT=3000
-MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/
-DB_NAME=todoapp-prod
-JWT_SECRET=super-secure-production-secret
-JWT_EXPIRES_IN=0
-CORS_ORIGINS=https://your-frontend-app.com,http://localhost:3000
-RATE_LIMIT_TTL=900
-RATE_LIMIT_LIMIT=100
+### Крок 3: Деплой на Render.com
+
+1. **Реєстрація**
+   - Перейдіть на [render.com](https://render.com)
+   - Натисніть "Get Started for Free"
+   - Виберіть "Sign up with GitHub"
+   - Авторизуйте доступ до репозиторіїв
+
+2. **Створення Web Service**
+   - На dashboard натисніть "New +" → "Web Service"
+   - Виберіть репозиторій `TodoBackend`
+   - Натисніть "Connect"
+
+3. **Налаштування сервісу**
+   - **Name**: `todolist-backend` (або інше ім'я)
+   - **Region**: `Frankfurt (EU Central)` (найближчий до України)
+   - **Branch**: `main`
+   - **Root Directory**: залиште порожнім
+   - **Runtime**: `Node`
+   - **Build Command**: `npm install && npm run build`
+   - **Start Command**: `npm run start:prod`
+   - **Instance Type**: `Free`
+
+4. **Додайте змінні оточення (Environment Variables)**
+   
+   Натисніть "Add Environment Variable" та додайте:
+   
+   ```
+   NODE_ENV = production
+   
+   MONGODB_URI = mongodb+srv://todoapp-user:YOUR_PASSWORD@cluster0.xxxxx.mongodb.net/
+   
+   DB_NAME = todoapp
+   
+   JWT_SECRET = [згенеруйте: node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"]
+   
+   JWT_EXPIRES_IN = 7d
+   
+   CORS_ORIGINS = https://mortyq.github.io
+   
+   RATE_LIMIT_TTL = 900
+   
+   RATE_LIMIT_LIMIT = 100
+   ```
+   
+   **Важливо**: 
+   - `MONGODB_URI` - використайте Connection String з MongoDB Atlas
+   - `JWT_SECRET` - згенеруйте надійний ключ!
+   - `CORS_ORIGINS` - додайте URL вашого фронтенду
+
+5. **Запустіть деплой**
+   - Натисніть "Create Web Service"
+   - Render почне збирати та деплоїти проект
+   - Слідкуйте за логами в реальному часі
+   - Після успіху отримаєте URL: `https://todolist-backend.onrender.com`
+
+### Крок 4: Перевірка роботи
+
+```bash
+# Перевірте health endpoint
+curl https://todolist-backend.onrender.com/api/health
+
+# Очікуваний результат:
+{
+  "status": "ok",
+  "timestamp": "2024-01-15T10:30:00.000Z",
+  "database": "connected"
+}
 ```
 
-### Railway.app (рекомендується)
-1. Підключіть GitHub репозиторій
-2. Встановіть змінні оточення
-3. Railway автоматично визначить Node.js та запустить
+### Крок 5: Оновіть фронтенд
+
+У вашому фронтенд проекті змініть API URL:
+
+```typescript
+// Старий (локальний)
+const API_URL = 'http://localhost:3030/api';
+
+// Новий (production)
+const API_URL = 'https://todolist-backend.onrender.com/api';
+```
+
+### Автоматичні оновлення
+
+Render автоматично оновлює застосунок при кожному `git push` в гілку `main`! 🎉
+
+### ⚠️ Важливо знати про безкоштовний тариф
+
+- **Сервіс "засипає"** після 15 хвилин неактивності
+- **Перший запит** після "сну" займе 30-50 секунд (cold start)
+- **750 годин роботи** на місяць безкоштовно (достатньо для 1 сервісу)
+- **Автоматичне пробудження** при будь-якому запиті
+
+### 🔧 Вирішення проблем при деплої
+
+**Помилка збірки (Build failed)**
+```bash
+# Перевірте локально:
+npm install
+npm run build
+npm run start:prod
+```
+
+**База даних не підключається**
+- Перевірте IP whitelist в MongoDB Atlas (має бути 0.0.0.0/0)
+- Перевірте правильність MONGODB_URI
+- Перевірте пароль користувача бази даних
+
+**CORS помилки**
+- Додайте URL фронтенду в `CORS_ORIGINS`
+- Приклад: `CORS_ORIGINS=https://mortyq.github.io,https://yourdomain.com`
+
+**Логи та моніторинг**
+- Переглядайте логи в Render dashboard → "Logs"
+- Перевірте статус: "Events" та "Metrics"
+
+### 💰 Якщо потрібна краща продуктивність
+
+Платний тариф ($7/міс):
+- ✅ Без засипання
+- ✅ Більше ресурсів (512 MB RAM → 2 GB)
+- ✅ Швидший запуск
+- ✅ Більше годин роботи
+
+Альтернативи:
+- **Railway.app** - $5 кредитів на місяць
+- **Fly.io** - безкоштовний тариф з хорошою продуктивністю
+- **Vercel** - для serverless функцій
 
 ## 📝 Корисні команди
 
