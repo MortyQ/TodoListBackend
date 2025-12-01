@@ -390,36 +390,32 @@ API повертає детальні помилки валідації:
 ```bash
 # Переконайтесь, що всі зміни збережено
 git add .
-git commit -m "Prepare for deployment"
+git commit -m "Prepare for Vercel deployment"
 git push origin main
 ```
 
-### Крок 3: Деплой на Render.com
+### Крок 3: Деплой на Vercel
 
 1. **Реєстрація**
-   - Перейдіть на [render.com](https://render.com)
-   - Натисніть "Get Started for Free"
-   - Виберіть "Sign up with GitHub"
+   - Перейдіть на [vercel.com](https://vercel.com)
+   - Натисніть "Sign Up"
+   - Виберіть "Continue with GitHub"
    - Авторизуйте доступ до репозиторіїв
 
-2. **Створення Web Service**
-   - На dashboard натисніть "New +" → "Web Service"
+2. **Створення проекту**
+   - На dashboard натисніть "Add New" → "Project"
    - Виберіть репозиторій `TodoBackend`
-   - Натисніть "Connect"
+   - Натисніть "Import"
 
-3. **Налаштування сервісу**
-   - **Name**: `todolist-backend` (або інше ім'я)
-   - **Region**: `Frankfurt (EU Central)` (найближчий до України)
-   - **Branch**: `main`
+3. **Налаштування проекту**
+   - **Framework Preset**: Other (Vercel автоматично визначить)
    - **Root Directory**: залиште порожнім
-   - **Runtime**: `Node`
-   - **Build Command**: `npm install && npm run build`
-   - **Start Command**: `npm run start:prod`
-   - **Instance Type**: `Free`
+   - **Build Command**: автоматично використається `npm run build`
+   - **Output Directory**: `dist`
 
 4. **Додайте змінні оточення (Environment Variables)**
    
-   Натисніть "Add Environment Variable" та додайте:
+   Перед деплоєм додайте змінні:
    
    ```
    NODE_ENV = production
@@ -430,9 +426,9 @@ git push origin main
    
    JWT_SECRET = [згенеруйте: node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"]
    
-   JWT_EXPIRES_IN = 7d
+   JWT_EXPIRES_IN = 0
    
-   CORS_ORIGINS = https://mortyq.github.io
+   CORS_ORIGINS = http://localhost:3000
    
    RATE_LIMIT_TTL = 900
    
@@ -442,26 +438,29 @@ git push origin main
    **Важливо**: 
    - `MONGODB_URI` - використайте Connection String з MongoDB Atlas
    - `JWT_SECRET` - згенеруйте надійний ключ!
-   - `CORS_ORIGINS` - додайте URL вашого фронтенду
+   - `CORS_ORIGINS` - додайте URL вашого фронтенду (наприклад: `http://localhost:3000` для розробки)
 
 5. **Запустіть деплой**
-   - Натисніть "Create Web Service"
-   - Render почне збирати та деплоїти проект
+   - Натисніть "Deploy"
+   - Vercel почне збирати та деплоїти проект
    - Слідкуйте за логами в реальному часі
-   - Після успіху отримаєте URL: `https://todolist-backend.onrender.com`
+   - Після успіху отримаєте URL: `https://your-project.vercel.app`
 
 ### Крок 4: Перевірка роботи
 
 ```bash
 # Перевірте health endpoint
-curl https://todolist-backend.onrender.com/api/health
+curl https://your-project.vercel.app/api/health
 
 # Очікуваний результат:
 {
   "status": "ok",
-  "timestamp": "2024-01-15T10:30:00.000Z",
+  "timestamp": "2024-12-01T10:30:00.000Z",
   "database": "connected"
 }
+
+# Swagger документація (може не працювати на serverless)
+https://your-project.vercel.app/docs
 ```
 
 ### Крок 5: Оновіть фронтенд
@@ -469,23 +468,24 @@ curl https://todolist-backend.onrender.com/api/health
 У вашому фронтенд проекті змініть API URL:
 
 ```typescript
-// Старий (локальний)
+// Локальна розробка
 const API_URL = 'http://localhost:3030/api';
 
-// Новий (production)
-const API_URL = 'https://todolist-backend.onrender.com/api';
+// Production на Vercel
+const API_URL = 'https://your-project.vercel.app/api';
 ```
 
 ### Автоматичні оновлення
 
-Render автоматично оновлює застосунок при кожному `git push` в гілку `main`! 🎉
+Vercel автоматично оновлює застосунок при кожному `git push` в гілку `main`! 🎉
 
-### ⚠️ Важливо знати про безкоштовний тариф
+### ⚠️ Важливо знати про Vercel Serverless
 
-- **Сервіс "засипає"** після 15 хвилин неактивності
-- **Перший запит** після "сну" займе 30-50 секунд (cold start)
-- **750 годин роботи** на місяць безкоштовно (достатньо для 1 сервісу)
-- **Автоматичне пробудження** при будь-якому запиті
+- **Serverless архітектура** - кожен запит запускає окрему функцію
+- **Холодний старт** - перший запит може бути повільніший (1-3 сек)
+- **Швидке масштабування** - автоматично під навантаженням
+- **Безкоштовний тариф**: 100GB bandwidth, необмежена кількість запитів
+- **Ліміти**: функція виконується максимум 10 секунд на безкоштовному тарифі
 
 ### 🔧 Вирішення проблем при деплої
 
