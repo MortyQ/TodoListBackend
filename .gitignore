@@ -88,6 +88,9 @@ public
 .out
 .storybook-out
 
+# Vercel
+.vercel
+
 # Temporary folders
 tmp/
 temp/

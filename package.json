@@ -14,7 +14,7 @@
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs}/**/*.ts\" --fix",
     "seed": "ts-node src/scripts/seed.ts",
-    "check-deploy": "bash check-deploy-readiness.sh"
+    "vercel-build": "nest build"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",

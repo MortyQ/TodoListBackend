@@ -24,9 +24,16 @@ async function bootstrap() {
     }),
   );
 
+  // Настройка CORS
+  const corsOrigins = configService.corsOrigins;
   app.enableCors({
-    origin: configService.corsOrigins,
+    origin: corsOrigins === '*' ? true : corsOrigins,
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+    exposedHeaders: ['Authorization'],
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
   });
 
   const swaggerConfig = new DocumentBuilder()
