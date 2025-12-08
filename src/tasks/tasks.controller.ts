@@ -40,6 +40,7 @@ export class TasksController {
   @ApiOperation({ summary: 'Get all tasks in list with filters' })
   @ApiQuery({ name: 'status', required: false, description: 'Filter by status' })
   @ApiQuery({ name: 'tag', required: false, description: 'Filter by tag' })
+  @ApiQuery({ name: 'isStarred', required: false, description: 'Filter by starred/important tasks', type: Boolean })
   @ApiQuery({ name: 'dueFrom', required: false, description: 'Due date from (ISO date)' })
   @ApiQuery({ name: 'dueTo', required: false, description: 'Due date to (ISO date)' })
   @ApiQuery({ name: 'q', required: false, description: 'Search in text' })
@@ -131,6 +132,39 @@ export class TasksController {
   })
   async complete(@Param('taskId') taskId: string, @Req() req: any) {
     return this.tasksService.complete(taskId, req.user.id, req.user.role);
+  }
+
+  // Получение важных (starred) задач из всех списков
+  @Get('/starred/all')
+  @ApiOperation({ summary: 'Get all starred/important tasks from all user lists (Top Important Tasks)' })
+  @ApiQuery({ name: 'limit', required: false, description: 'Limit results (default: 10)', example: 10 })
+  @ApiResponse({
+    status: 200,
+    description: 'List of starred tasks'
+  })
+  async getStarredTasks(@Query('limit') limit: string, @Req() req: any) {
+    const limitNum = limit ? parseInt(limit, 10) : 10;
+    return this.tasksService.getStarredTasks(req.user.id, req.user.role, limitNum);
+  }
+
+  // Переключение статуса isStarred (add/remove from starred)
+  @Patch('/:taskId/toggle-star')
+  @ApiOperation({ summary: 'Toggle task starred status (add/remove from important tasks)' })
+  @ApiResponse({
+    status: 200,
+    description: 'Task starred status toggled',
+    type: Task
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Task not found'
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Access denied - task from another user list'
+  })
+  async toggleStar(@Param('taskId') taskId: string, @Req() req: any) {
+    return this.tasksService.toggleStar(taskId, req.user.id, req.user.role);
   }
 
   @Delete('/:taskId')

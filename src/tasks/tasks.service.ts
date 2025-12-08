@@ -40,6 +40,7 @@ export class TasksService {
       listId,
       order,
       dueDate: createTaskDto.dueDate ? new Date(createTaskDto.dueDate) : undefined,
+      deadline: createTaskDto.deadline ? new Date(createTaskDto.deadline) : undefined,
     });
 
     return task.save();
@@ -64,7 +65,7 @@ export class TasksService {
     }
 
     const { limit, offset, sort, order } = paginationDto;
-    const { status, tag, dueFrom, dueTo, q } = filtersDto;
+    const { status, tag, dueFrom, dueTo, q, isStarred } = filtersDto;
 
     // Строим фильтр для поиска
     const filter: any = {
@@ -79,6 +80,10 @@ export class TasksService {
 
     if (tag) {
       filter.tags = { $in: [tag] }; // задача содержит данный тег
+    }
+
+    if (typeof isStarred === 'boolean') {
+      filter.isStarred = isStarred; // фильтр по важным задачам
     }
 
     if (dueFrom || dueTo) {
@@ -189,6 +194,11 @@ export class TasksService {
       updateData.dueDate = new Date(updateTaskDto.dueDate);
     }
 
+    // Преобразуем deadline в Date объект если передан
+    if (updateTaskDto.deadline) {
+      updateData.deadline = new Date(updateTaskDto.deadline);
+    }
+
     const updatedTask = await this.taskModel.findByIdAndUpdate(
       taskId,
       updateData,
@@ -223,5 +233,58 @@ export class TasksService {
     await this.taskModel.findByIdAndUpdate(taskId, {
       deletedAt: new Date(),
     });
+  }
+
+  // Получение важных (starred) задач из всех списков пользователя
+  async getStarredTasks(userId: string, userRole: string, limit: number = 10) {
+    // Получаем все списки пользователя
+    const userLists = await this.listModel.find(
+      userRole === UserRole.ADMIN ? {} : { ownerId: userId }
+    ).select('_id');
+
+    const listIds = userLists.map(list => list._id);
+
+    // Ищем важные задачи из этих списков
+    const starredTasks = await this.taskModel
+      .find({
+        listId: { $in: listIds },
+        isStarred: true,
+        deletedAt: null,
+      })
+      .populate('listId', 'title')
+      .sort({ priority: -1, deadline: 1, createdAt: -1 }) // сортируем по приоритету, дедлайну и дате создания
+      .limit(limit)
+      .exec();
+
+    return {
+      data: starredTasks,
+      total: starredTasks.length,
+    };
+  }
+
+  // Переключение статуса isStarred для задачи
+  async toggleStar(taskId: string, userId: string, userRole: string): Promise<Task> {
+    const task = await this.taskModel
+      .findOne({ _id: taskId, deletedAt: null })
+      .populate('listId');
+
+    if (!task) {
+      throw new NotFoundException('Task not found');
+    }
+
+    // Проверяем доступ
+    const list = task.listId as any;
+    if (userRole !== UserRole.ADMIN && list.ownerId.toString() !== userId) {
+      throw new ForbiddenException('You can only update tasks from your own lists');
+    }
+
+    // Переключаем статус
+    const updatedTask = await this.taskModel.findByIdAndUpdate(
+      taskId,
+      { isStarred: !task.isStarred },
+      { new: true },
+    ).populate('listId');
+
+    return updatedTask;
   }
 }

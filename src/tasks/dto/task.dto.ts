@@ -75,6 +75,25 @@ export class CreateTaskDto {
   dueDate?: string;
 
   @ApiProperty({
+    description: 'Task deadline (ISO string)',
+    example: '2023-12-31T23:59:59.000Z',
+    required: false
+  })
+  @IsOptional()
+  @IsDateString({}, { message: 'Deadline must be a valid ISO date string' })
+  deadline?: string;
+
+  @ApiProperty({
+    description: 'Mark task as important/starred (favorite)',
+    example: false,
+    required: false,
+    default: false
+  })
+  @IsOptional()
+  @Transform(({ value }) => value === true || value === 'true')
+  isStarred?: boolean;
+
+  @ApiProperty({
     description: 'Task order in list',
     example: 1,
     required: false
@@ -160,6 +179,24 @@ export class UpdateTaskDto {
   dueDate?: string;
 
   @ApiProperty({
+    description: 'Task deadline (ISO string)',
+    example: '2023-12-31T23:59:59.000Z',
+    required: false
+  })
+  @IsOptional()
+  @IsDateString({}, { message: 'Deadline must be a valid ISO date string' })
+  deadline?: string;
+
+  @ApiProperty({
+    description: 'Mark task as important/starred (favorite)',
+    example: true,
+    required: false
+  })
+  @IsOptional()
+  @Transform(({ value }) => value === true || value === 'true')
+  isStarred?: boolean;
+
+  @ApiProperty({
     description: 'Task order in list',
     example: 2,
     required: false
@@ -218,4 +255,13 @@ export class TaskFiltersDto {
   @IsOptional()
   @IsString()
   q?: string;
+
+  @ApiProperty({
+    description: 'Filter by starred/important tasks',
+    example: true,
+    required: false
+  })
+  @IsOptional()
+  @Transform(({ value }) => value === true || value === 'true')
+  isStarred?: boolean;
 }

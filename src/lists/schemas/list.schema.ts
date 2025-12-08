@@ -33,6 +33,17 @@ export class List extends Document {
   ownerId: Types.ObjectId | User;
 
   @ApiProperty({
+    description: 'List deadline',
+    example: '2023-12-31T23:59:59.000Z',
+    required: false
+  })
+  @Prop({
+    required: false,
+    type: Date,
+  })
+  deadline?: Date;
+
+  @ApiProperty({
     description: 'List creation date',
     example: '2023-01-01T00:00:00.000Z'
   })

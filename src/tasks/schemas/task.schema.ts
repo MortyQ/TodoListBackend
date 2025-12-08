@@ -132,6 +132,30 @@ export class Task extends Document {
   dueDate?: Date;
 
   @ApiProperty({
+    description: 'Task deadline',
+    example: '2023-12-31T23:59:59.000Z',
+    required: false
+  })
+  @Prop({
+    required: false,
+    type: Date,
+  })
+  deadline?: Date;
+
+  @ApiProperty({
+    description: 'Is task marked as important/starred (favorite)',
+    example: false,
+    default: false
+  })
+  @Prop({
+    required: true,
+    type: Boolean,
+    default: false,
+    index: true, // индекс для быстрого поиска важных задач
+  })
+  isStarred: boolean;
+
+  @ApiProperty({
     description: 'Task completion date',
     example: '2023-01-15T10:30:00.000Z',
     required: false

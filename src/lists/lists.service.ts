@@ -19,6 +19,7 @@ export class ListsService {
     const list = new this.listModel({
       ...createListDto,
       ownerId,
+      deadline: createListDto.deadline ? new Date(createListDto.deadline) : undefined,
     });
 
     return list.save();
@@ -89,9 +90,17 @@ export class ListsService {
       throw new ForbiddenException('You can only update your own lists');
     }
 
+    // Подготавливаем данные для обновления
+    const updateData: any = { ...updateListDto };
+
+    // Преобразуем deadline в Date объект если передан
+    if (updateListDto.deadline) {
+      updateData.deadline = new Date(updateListDto.deadline);
+    }
+
     const updatedList = await this.listModel.findByIdAndUpdate(
       id,
-      updateListDto,
+      updateData,
       { new: true },
     ).populate('ownerId', 'email name');
 
