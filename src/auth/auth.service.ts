@@ -6,6 +6,7 @@ import * as argon2 from 'argon2';
 import { User, UserRole } from '../users/schemas/user.schema';
 import { CreateUserDto, LoginDto, LoginResponseDto } from './dto/auth.dto';
 import { AppConfigService } from '../config/app-config.service';
+import { ROLE_PERMISSIONS } from '../common/constants/permissions.constants';
 
 @Injectable()
 export class AuthService {
@@ -34,6 +35,7 @@ export class AuthService {
       passwordHash,
       name,
       role: UserRole.USER, // по умолчанию обычный пользователь
+      permissions: ROLE_PERMISSIONS.USER, // назначаем стандартные разрешения для обычного пользователя
     });
 
     return user.save();
@@ -60,6 +62,7 @@ export class AuthService {
       sub: user.id,
       email: user.email,
       role: user.role,
+      permissions: user.permissions || [], // добавляем разрешения в токен
     };
 
     const tokenOptions: any = {};

@@ -4,15 +4,19 @@ import { ListsService } from './lists.service';
 import { CreateListDto, UpdateListDto, ListResponseDto } from './dto/list.dto';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { PermissionsGuard } from '../common/guards/permissions.guard';
+import { RequirePermission } from '../common/decorators/permissions.decorator';
+import { PERMISSIONS } from '../common/constants/permissions.constants';
 
 @ApiTags('Lists')
 @Controller('lists')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard) // Применяем JWT и Permissions guards
 @ApiBearerAuth()
 export class ListsController {
   constructor(private readonly listsService: ListsService) {}
 
   @Post()
+  @RequirePermission(PERMISSIONS.CREATE_LIST)
   @ApiOperation({ summary: 'Create new list' })
   @ApiResponse({
     status: 201,
@@ -24,6 +28,7 @@ export class ListsController {
   }
 
   @Get()
+  @RequirePermission(PERMISSIONS.READ_LIST)
   @ApiOperation({ summary: 'Get all user lists' })
   @ApiResponse({
     status: 200,
@@ -34,6 +39,7 @@ export class ListsController {
   }
 
   @Get(':listId')
+  @RequirePermission(PERMISSIONS.READ_LIST)
   @ApiOperation({ summary: 'Get specific list' })
   @ApiResponse({
     status: 200,
@@ -53,6 +59,7 @@ export class ListsController {
   }
 
   @Patch(':listId')
+  @RequirePermission(PERMISSIONS.UPDATE_LIST)
   @ApiOperation({ summary: 'Update list' })
   @ApiResponse({
     status: 200,
@@ -76,6 +83,7 @@ export class ListsController {
   }
 
   @Delete(':listId')
+  @RequirePermission(PERMISSIONS.DELETE_LIST)
   @ApiOperation({ summary: 'Delete list and all its tasks' })
   @ApiResponse({
     status: 200,

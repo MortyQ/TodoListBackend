@@ -58,6 +58,26 @@ export class User extends Document {
   role: UserRole;
 
   @ApiProperty({
+    description: 'User permissions array',
+    example: ['read:dashboard', 'create:list', 'read:users'],
+    type: [String],
+    required: false
+  })
+  @Prop({
+    type: [String],
+    default: [],
+  })
+  permissions: string[];
+
+  @ApiProperty({
+    description: 'Is user an admin (convenience field)',
+    example: false
+  })
+  get isAdmin(): boolean {
+    return this.role === UserRole.ADMIN;
+  }
+
+  @ApiProperty({
     description: 'Account creation date',
     example: '2023-01-01T00:00:00.000Z'
   })

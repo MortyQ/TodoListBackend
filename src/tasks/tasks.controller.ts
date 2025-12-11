@@ -4,11 +4,14 @@ import { TasksService } from './tasks.service';
 import { CreateTaskDto, UpdateTaskDto, TaskFiltersDto } from './dto/task.dto';
 import { TaskPaginationDto } from '../common/dto/pagination.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { PermissionsGuard } from '../common/guards/permissions.guard';
+import { RequirePermission } from '../common/decorators/permissions.decorator';
+import { PERMISSIONS } from '../common/constants/permissions.constants';
 import { Task } from './schemas/task.schema';
 
 @ApiTags('Tasks')
 @Controller('tasks')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard) // Применяем JWT и Permissions guards
 @ApiBearerAuth()
 export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
@@ -73,6 +76,7 @@ export class TasksController {
 
   // Получение конкретной задачи
   @Get('/:taskId')
+  @RequirePermission(PERMISSIONS.READ_TASK)
   @ApiOperation({ summary: 'Get specific task' })
   @ApiResponse({
     status: 200,
@@ -92,6 +96,7 @@ export class TasksController {
   }
 
   @Patch('/:taskId')
+  @RequirePermission(PERMISSIONS.UPDATE_TASK)
   @ApiOperation({ summary: 'Update task' })
   @ApiResponse({
     status: 200,
@@ -116,6 +121,7 @@ export class TasksController {
 
   // Быстрое завершение задачи
   @Patch('/:taskId/complete')
+  @RequirePermission(PERMISSIONS.UPDATE_TASK)
   @ApiOperation({ summary: 'Mark task as completed' })
   @ApiResponse({
     status: 200,
@@ -136,6 +142,7 @@ export class TasksController {
 
   // Получение важных (starred) задач из всех списков
   @Get('/starred/all')
+  @RequirePermission(PERMISSIONS.READ_TASK)
   @ApiOperation({ summary: 'Get all starred/important tasks from all user lists (Top Important Tasks)' })
   @ApiQuery({ name: 'limit', required: false, description: 'Limit results (default: 10)', example: 10 })
   @ApiResponse({
@@ -149,6 +156,7 @@ export class TasksController {
 
   // Переключение статуса isStarred (add/remove from starred)
   @Patch('/:taskId/toggle-star')
+  @RequirePermission(PERMISSIONS.UPDATE_TASK)
   @ApiOperation({ summary: 'Toggle task starred status (add/remove from important tasks)' })
   @ApiResponse({
     status: 200,
@@ -168,6 +176,7 @@ export class TasksController {
   }
 
   @Delete('/:taskId')
+  @RequirePermission(PERMISSIONS.DELETE_TASK)
   @ApiOperation({ summary: 'Delete task (soft delete)' })
   @ApiResponse({
     status: 200,

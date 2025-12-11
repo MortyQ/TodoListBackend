@@ -8,6 +8,7 @@ export interface JwtPayload {
   sub: string; // ID пользователя
   email: string;
   role: string;
+  permissions?: string[]; // массив разрешений пользователя
 }
 
 // Стратегия для проверки JWT токенов
@@ -28,6 +29,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       id: payload.sub,
       email: payload.email,
       role: payload.role,
+      permissions: payload.permissions || [], // добавляем разрешения в объект пользователя
     };
   }
 }

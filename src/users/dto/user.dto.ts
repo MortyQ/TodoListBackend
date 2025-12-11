@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsString, IsOptional, IsEnum } from 'class-validator';
+import { IsEmail, IsString, IsOptional, IsEnum, IsArray } from 'class-validator';
 import { UserRole } from '../schemas/user.schema';
 
 // DTO для обновления профиля пользователя (самим пользователем)
@@ -23,6 +23,18 @@ export class UpdateUserRoleDto {
   })
   @IsEnum(UserRole, { message: 'Role must be either user or admin' })
   role: UserRole;
+}
+
+// DTO для изменения разрешений пользователя (только админом)
+export class UpdateUserPermissionsDto {
+  @ApiProperty({
+    description: 'User permissions array',
+    example: ['read:dashboard', 'create:list', 'read:users'],
+    type: [String]
+  })
+  @IsArray()
+  @IsString({ each: true })
+  permissions: string[];
 }
 
 // DTO для получения профиля пользователя (ответ)
@@ -52,6 +64,20 @@ export class UserProfileDto {
     enum: UserRole
   })
   role: UserRole;
+
+  @ApiProperty({
+    description: 'User permissions',
+    example: ['read:dashboard', 'create:list', 'read:users'],
+    type: [String],
+    required: false
+  })
+  permissions?: string[];
+
+  @ApiProperty({
+    description: 'Is user an admin',
+    example: false
+  })
+  isAdmin?: boolean;
 
   @ApiProperty({
     description: 'Account creation date',

@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/commo
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserRole } from './schemas/user.schema';
-import { UpdateProfileDto, UpdateUserRoleDto } from './dto/user.dto';
+import { UpdateProfileDto, UpdateUserRoleDto, UpdateUserPermissionsDto } from './dto/user.dto';
 import { PaginationDto } from '../common/dto/pagination.dto';
 
 @Injectable()
@@ -81,6 +81,21 @@ export class UsersService {
     const user = await this.userModel.findByIdAndUpdate(
       targetUserId,
       { role: updateRoleDto.role },
+      { new: true },
+    );
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return user;
+  }
+
+  // Изменение разрешений пользователя (только админом)
+  async updatePermissions(targetUserId: string, updatePermissionsDto: UpdateUserPermissionsDto): Promise<User> {
+    const user = await this.userModel.findByIdAndUpdate(
+      targetUserId,
+      { permissions: updatePermissionsDto.permissions },
       { new: true },
     );
 

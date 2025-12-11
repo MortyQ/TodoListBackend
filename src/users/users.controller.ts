@@ -1,15 +1,18 @@
 import { Controller, Get, Patch, Delete, Body, Param, Query, UseGuards, Req } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { UsersService } from './users.service';
-import { UpdateProfileDto, UpdateUserRoleDto, UserProfileDto } from './dto/user.dto';
+import { UpdateProfileDto, UpdateUserRoleDto, UpdateUserPermissionsDto, UserProfileDto } from './dto/user.dto';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard, Roles } from '../common/guards/roles.guard';
+import { PermissionsGuard } from '../common/guards/permissions.guard';
+import { RequirePermission } from '../common/decorators/permissions.decorator';
+import { PERMISSIONS } from '../common/constants/permissions.constants';
 import { UserRole } from './schemas/user.schema';
 
 @ApiTags('Users')
 @Controller('users')
-@UseGuards(JwtAuthGuard) // все эндпоинты требуют авторизации
+@UseGuards(JwtAuthGuard, PermissionsGuard) // все эндпоинты требуют авторизации
 @ApiBearerAuth()
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
@@ -38,6 +41,7 @@ export class UsersController {
   @Get(':id')
   @UseGuards(RolesGuard)
   @Roles(UserRole.ADMIN)
+  @RequirePermission(PERMISSIONS.READ_USERS)
   @ApiOperation({ summary: 'Get user by ID (admin only)' })
   @ApiResponse({
     status: 200,
@@ -55,6 +59,7 @@ export class UsersController {
   @Patch(':id/role')
   @UseGuards(RolesGuard)
   @Roles(UserRole.ADMIN)
+  @RequirePermission(PERMISSIONS.MANAGE_ROLES)
   @ApiOperation({ summary: 'Change user role (admin only)' })
   @ApiResponse({
     status: 200,
@@ -73,9 +78,31 @@ export class UsersController {
     return this.usersService.updateRole(id, req.user.id, updateRoleDto);
   }
 
+  @Patch(':id/permissions')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @RequirePermission(PERMISSIONS.MANAGE_PERMISSIONS)
+  @ApiOperation({ summary: 'Update user permissions (admin only)' })
+  @ApiResponse({
+    status: 200,
+    description: 'User permissions updated',
+    type: UserProfileDto
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'User not found'
+  })
+  async updatePermissions(
+    @Param('id') id: string,
+    @Body() updatePermissionsDto: UpdateUserPermissionsDto,
+  ) {
+    return this.usersService.updatePermissions(id, updatePermissionsDto);
+  }
+
   @Delete(':id')
   @UseGuards(RolesGuard)
   @Roles(UserRole.ADMIN)
+  @RequirePermission(PERMISSIONS.DELETE_USER)
   @ApiOperation({ summary: 'Delete user (admin only)' })
   @ApiResponse({
     status: 200,
