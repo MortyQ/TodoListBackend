@@ -10,6 +10,7 @@ import { UsersModule } from './users/users.module';
 import { ListsModule } from './lists/lists.module';
 import { TasksModule } from './tasks/tasks.module';
 import { HealthModule } from './health/health.module';
+import { PermissionsModule } from './permissions/permissions.module';
 
 // Импортируем конфигурацию и общие компоненты
 import { AppConfigModule } from './config/app-config.module';
@@ -54,6 +55,7 @@ import { ThrottlerGuard } from '@nestjs/throttler';
     ListsModule,
     TasksModule,
     HealthModule,
+    PermissionsModule,
   ],
   providers: [
     // Глобальный фильтр для обработки всех исключений
