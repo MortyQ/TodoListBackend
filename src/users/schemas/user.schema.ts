@@ -101,6 +101,11 @@ UserSchema.virtual('id').get(function () {
   return this._id.toHexString();
 });
 
+// Виртуальное поле isAdmin
+UserSchema.virtual('isAdmin').get(function () {
+  return this.role === UserRole.ADMIN;
+});
+
 // Обеспечиваем что виртуальные поля включаются в JSON
 UserSchema.set('toJSON', {
   virtuals: true,
