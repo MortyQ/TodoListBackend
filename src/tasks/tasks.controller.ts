@@ -40,16 +40,141 @@ export class TasksController {
   }
 
   @Get('/lists/:listId')
-  @ApiOperation({ summary: 'Get all tasks in list with filters' })
-  @ApiQuery({ name: 'status', required: false, description: 'Filter by status' })
-  @ApiQuery({ name: 'tag', required: false, description: 'Filter by tag' })
-  @ApiQuery({ name: 'isStarred', required: false, description: 'Filter by starred/important tasks', type: Boolean })
-  @ApiQuery({ name: 'dueFrom', required: false, description: 'Due date from (ISO date)' })
-  @ApiQuery({ name: 'dueTo', required: false, description: 'Due date to (ISO date)' })
-  @ApiQuery({ name: 'q', required: false, description: 'Search in text' })
+  @ApiOperation({
+    summary: 'Get all tasks in list with filters',
+    description: `
+Retrieve paginated list of tasks with advanced sorting, filtering and search.
+
+**Sorting options:**
+- \`createdAt\` - Sort by creation date
+- \`updatedAt\` - Sort by last update date
+- \`dueDate\` - Sort by due date
+- \`deadline\` - Sort by deadline
+- \`priority\` - Sort by priority (high → medium → low)
+- \`order\` - Sort by manual order (drag & drop)
+- \`title\` - Sort alphabetically by title
+- \`status\` - Sort by status
+
+**Filter options:**
+- \`status\` - Filter by task status (todo, in_progress, done, archived)
+- \`tag\` - Filter by tag name
+- \`isStarred\` - Filter starred/important tasks only
+- \`dueFrom\` / \`dueTo\` - Filter by due date range
+- \`q\` - Full-text search in title, description, longDescription
+
+**Example requests:**
+- \`GET /tasks/lists/:id?sort=priority&order=desc\` - High priority tasks first
+- \`GET /tasks/lists/:id?sort=deadline&order=asc&status=todo\` - Todo tasks by nearest deadline
+- \`GET /tasks/lists/:id?isStarred=true&sort=createdAt&order=desc\` - Starred tasks, newest first
+- \`GET /tasks/lists/:id?q=report&sort=title&order=asc\` - Search "report", sorted by title
+    `
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    description: 'Number of records (1-100)',
+    example: 20,
+    schema: { type: 'integer', minimum: 1, maximum: 100, default: 20 }
+  })
+  @ApiQuery({
+    name: 'offset',
+    required: false,
+    description: 'Offset for pagination',
+    example: 0,
+    schema: { type: 'integer', minimum: 0, maximum: 10000, default: 0 }
+  })
+  @ApiQuery({
+    name: 'sort',
+    required: false,
+    description: 'Field to sort by',
+    example: 'createdAt',
+    schema: { type: 'string', enum: ['createdAt', 'updatedAt', 'dueDate', 'deadline', 'priority', 'order', 'title', 'status'], default: 'createdAt' }
+  })
+  @ApiQuery({
+    name: 'order',
+    required: false,
+    description: 'Sort direction',
+    example: 'desc',
+    schema: { type: 'string', enum: ['asc', 'desc'], default: 'desc' }
+  })
+  @ApiQuery({
+    name: 'status',
+    required: false,
+    description: 'Filter by task status',
+    schema: { type: 'string', enum: ['todo', 'in_progress', 'done', 'archived'] }
+  })
+  @ApiQuery({
+    name: 'tag',
+    required: false,
+    description: 'Filter by tag name',
+    example: 'urgent'
+  })
+  @ApiQuery({
+    name: 'isStarred',
+    required: false, 
+    description: 'Filter by starred/important tasks',
+    type: Boolean,
+    example: true
+  })
+  @ApiQuery({
+    name: 'dueFrom',
+    required: false,
+    description: 'Due date from (ISO date)',
+    example: '2024-12-01T00:00:00.000Z'
+  })
+  @ApiQuery({
+    name: 'dueTo',
+    required: false,
+    description: 'Due date to (ISO date)',
+    example: '2024-12-31T23:59:59.000Z'
+  })
+  @ApiQuery({
+    name: 'q',
+    required: false,
+    description: 'Search in title, description and longDescription',
+    example: 'report'
+  })
   @ApiResponse({
     status: 200,
-    description: 'Tasks list with pagination and filters'
+    description: 'Tasks list with pagination',
+    schema: {
+      type: 'object',
+      properties: {
+        data: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'string', example: '507f1f77bcf86cd799439011' },
+              listId: { type: 'string', example: '507f1f77bcf86cd799439012' },
+              title: { type: 'string', example: 'Write report' },
+              description: { type: 'string', example: 'Monthly sales report', nullable: true },
+              longDescription: { type: 'string', example: 'Detailed analysis...', nullable: true },
+              status: { type: 'string', enum: ['todo', 'in_progress', 'done', 'archived'], example: 'todo' },
+              priority: { type: 'string', enum: ['low', 'medium', 'high'], example: 'high' },
+              order: { type: 'integer', example: 1 },
+              tags: { type: 'array', items: { type: 'string' }, example: ['urgent', 'work'] },
+              isStarred: { type: 'boolean', example: true },
+              dueDate: { type: 'string', format: 'date-time', example: '2024-12-25T12:00:00.000Z', nullable: true },
+              deadline: { type: 'string', format: 'date-time', example: '2024-12-31T23:59:59.000Z', nullable: true },
+              createdAt: { type: 'string', format: 'date-time', example: '2024-12-01T10:00:00.000Z' },
+              updatedAt: { type: 'string', format: 'date-time', example: '2024-12-20T15:30:00.000Z' }
+            }
+          }
+        },
+        pagination: {
+          type: 'object',
+          properties: {
+            total: { type: 'integer', example: 50, description: 'Total number of tasks' },
+            limit: { type: 'integer', example: 20, description: 'Records per page' },
+            offset: { type: 'integer', example: 0, description: 'Current offset' },
+            hasMore: { type: 'boolean', example: true, description: 'Whether more records exist' },
+            currentPage: { type: 'integer', example: 1, description: 'Current page number' },
+            totalPages: { type: 'integer', example: 3, description: 'Total number of pages' }
+          }
+        }
+      }
+    }
   })
   @ApiResponse({
     status: 404,

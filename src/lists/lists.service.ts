@@ -4,7 +4,7 @@ import { Model } from 'mongoose';
 import { List } from './schemas/list.schema';
 import { Task } from '../tasks/schemas/task.schema';
 import { CreateListDto, UpdateListDto } from './dto/list.dto';
-import { PaginationDto } from '../common/dto/pagination.dto';
+import { ListPaginationDto, createPaginationMeta } from '../common/dto/pagination.dto';
 import { UserRole } from '../users/schemas/user.schema';
 
 @Injectable()
@@ -26,7 +26,7 @@ export class ListsService {
   }
 
   // Получение всех списков пользователя с пагинацией
-  async findAll(userId: string, userRole: string, paginationDto: PaginationDto) {
+  async findAll(userId: string, userRole: string, paginationDto: ListPaginationDto) {
     const { limit, offset, sort, order } = paginationDto;
 
     // Строим фильтр: админ видит все списки, обычный пользователь - только свои
@@ -50,12 +50,7 @@ export class ListsService {
 
     return {
       data: lists,
-      pagination: {
-        total,
-        limit,
-        offset,
-        hasMore: offset + limit < total,
-      },
+      pagination: createPaginationMeta(total, limit, offset),
     };
   }
 

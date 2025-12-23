@@ -4,7 +4,7 @@ import { Model } from 'mongoose';
 import { Task, TaskStatus } from './schemas/task.schema';
 import { List } from '../lists/schemas/list.schema';
 import { CreateTaskDto, UpdateTaskDto, TaskFiltersDto } from './dto/task.dto';
-import { TaskPaginationDto, TaskSortFields } from '../common/dto/pagination.dto';
+import { TaskPaginationDto, createPaginationMeta } from '../common/dto/pagination.dto';
 import { UserRole } from '../users/schemas/user.schema';
 
 @Injectable()
@@ -108,7 +108,7 @@ export class TasksService {
     // Обычная сортировка для всех полей включая приоритет
     const sortOption: any = {};
 
-    if (sort === TaskSortFields.PRIORITY) {
+    if (sort === 'priority') {
       // Для приоритета используем простую строковую сортировку
       // high будет первым, затем medium, затем low (алфавитная сортировка)
       sortOption.priority = order === 'asc' ? 1 : -1;
@@ -130,12 +130,7 @@ export class TasksService {
 
     return {
       data: tasks,
-      pagination: {
-        total,
-        limit,
-        offset,
-        hasMore: offset + limit < total,
-      },
+      pagination: createPaginationMeta(total, limit, offset),
     };
   }
 

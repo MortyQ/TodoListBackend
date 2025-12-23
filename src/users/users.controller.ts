@@ -2,7 +2,7 @@ import { Controller, Get, Patch, Delete, Body, Param, Query, UseGuards, Req } fr
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { UpdateProfileDto, UpdateUserRoleDto, UpdateUserPermissionsDto, UserProfileDto } from './dto/user.dto';
-import { PaginationDto } from '../common/dto/pagination.dto';
+import { UserPaginationDto } from '../common/dto/pagination.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard, Roles } from '../common/guards/roles.guard';
 import { PermissionsGuard } from '../common/guards/permissions.guard';
@@ -21,18 +21,100 @@ export class UsersController {
   @Get()
   @UseGuards(RolesGuard)
   @Roles(UserRole.ADMIN)
-  @ApiOperation({ summary: 'Get all users (admin only)' })
-  @ApiQuery({ name: 'q', required: false, description: 'Search by email' })
+  @ApiOperation({
+    summary: 'Get all users (admin only)',
+    description: `
+Retrieve paginated list of all users with sorting and search capabilities.
+
+**Sorting options:**
+- \`createdAt\` - Sort by registration date
+- \`updatedAt\` - Sort by last update date  
+- \`email\` - Sort alphabetically by email
+- \`name\` - Sort alphabetically by name
+- \`role\` - Sort by user role (admin/user)
+
+**Example requests:**
+- \`GET /users?sort=email&order=asc\` - Users sorted by email A-Z
+- \`GET /users?sort=createdAt&order=desc&limit=10\` - 10 newest users
+- \`GET /users?q=gmail&sort=name&order=asc\` - Search gmail users, sorted by name
+    `
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    description: 'Number of records (1-100)',
+    example: 20,
+    schema: { type: 'integer', minimum: 1, maximum: 100, default: 20 }
+  })
+  @ApiQuery({
+    name: 'offset',
+    required: false,
+    description: 'Offset for pagination',
+    example: 0,
+    schema: { type: 'integer', minimum: 0, maximum: 10000, default: 0 }
+  })
+  @ApiQuery({
+    name: 'sort',
+    required: false,
+    description: 'Field to sort by',
+    example: 'createdAt',
+    schema: { type: 'string', enum: ['createdAt', 'updatedAt', 'email', 'name', 'role'], default: 'createdAt' }
+  })
+  @ApiQuery({
+    name: 'order',
+    required: false,
+    description: 'Sort direction',
+    example: 'desc',
+    schema: { type: 'string', enum: ['asc', 'desc'], default: 'desc' }
+  })
+  @ApiQuery({
+    name: 'q',
+    required: false,
+    description: 'Search by email (case-insensitive)',
+    example: 'gmail'
+  })
   @ApiResponse({
     status: 200,
-    description: 'Users list with pagination'
+    description: 'Users list with pagination',
+    schema: {
+      type: 'object',
+      properties: {
+        data: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'string', example: '507f1f77bcf86cd799439011' },
+              email: { type: 'string', example: 'user@example.com' },
+              name: { type: 'string', example: 'John Doe' },
+              role: { type: 'string', enum: ['user', 'admin'], example: 'user' },
+              permissions: { type: 'array', items: { type: 'string' }, example: ['read:dashboard', 'create:list'] },
+              isAdmin: { type: 'boolean', example: false },
+              createdAt: { type: 'string', format: 'date-time', example: '2024-12-01T10:00:00.000Z' },
+              updatedAt: { type: 'string', format: 'date-time', example: '2024-12-20T15:30:00.000Z' }
+            }
+          }
+        },
+        pagination: {
+          type: 'object',
+          properties: {
+            total: { type: 'integer', example: 100, description: 'Total number of records' },
+            limit: { type: 'integer', example: 20, description: 'Records per page' },
+            offset: { type: 'integer', example: 0, description: 'Current offset' },
+            hasMore: { type: 'boolean', example: true, description: 'Whether more records exist' },
+            currentPage: { type: 'integer', example: 1, description: 'Current page number' },
+            totalPages: { type: 'integer', example: 5, description: 'Total number of pages' }
+          }
+        }
+      }
+    }
   })
   @ApiResponse({
     status: 403,
     description: 'Access denied - admin role required'
   })
   async findAll(
-    @Query() paginationDto: PaginationDto,
+    @Query() paginationDto: UserPaginationDto,
     @Query('q') searchQuery?: string,
   ) {
     return this.usersService.findAll(paginationDto, searchQuery);

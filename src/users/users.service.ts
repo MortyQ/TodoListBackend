@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserRole } from './schemas/user.schema';
 import { UpdateProfileDto, UpdateUserRoleDto, UpdateUserPermissionsDto } from './dto/user.dto';
-import { PaginationDto } from '../common/dto/pagination.dto';
+import { UserPaginationDto, createPaginationMeta } from '../common/dto/pagination.dto';
 
 @Injectable()
 export class UsersService {
@@ -12,7 +12,7 @@ export class UsersService {
   ) {}
 
   // Получение всех пользователей с пагинацией (только для админа)
-  async findAll(paginationDto: PaginationDto, searchQuery?: string) {
+  async findAll(paginationDto: UserPaginationDto, searchQuery?: string) {
     const { limit, offset, sort, order } = paginationDto;
 
     // Строим фильтр для поиска
@@ -38,12 +38,7 @@ export class UsersService {
 
     return {
       data: users,
-      pagination: {
-        total,
-        limit,
-        offset,
-        hasMore: offset + limit < total,
-      },
+      pagination: createPaginationMeta(total, limit, offset),
     };
   }
 
