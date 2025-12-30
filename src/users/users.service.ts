@@ -13,12 +13,15 @@ export class UsersService {
 
   // Получение всех пользователей с пагинацией (только для админа)
   async findAll(paginationDto: UserPaginationDto, searchQuery?: string) {
-    const { limit, offset, sort, order } = paginationDto;
+    const { limit, offset, sort, order, q } = paginationDto;
 
     // Строим фильтр для поиска
     const filter: any = {};
-    if (searchQuery) {
-      filter.email = { $regex: searchQuery, $options: 'i' }; // поиск по email (регистронезависимый)
+    if (q) {
+      filter.$or = [
+          { email: { $regex: q, $options: 'i' } },
+          { name: { $regex: q, $options: 'i' } }
+      ]
     }
 
     // Строим сортировку

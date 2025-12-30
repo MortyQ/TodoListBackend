@@ -111,7 +111,7 @@ Retrieve paginated list of tasks with advanced sorting, filtering and search.
   })
   @ApiQuery({
     name: 'isStarred',
-    required: false, 
+    required: false,
     description: 'Filter by starred/important tasks',
     type: Boolean,
     example: true

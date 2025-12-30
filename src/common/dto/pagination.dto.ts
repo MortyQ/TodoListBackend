@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsInt, Min, Max, IsIn } from 'class-validator';
+import {IsOptional, IsInt, Min, Max, IsIn, IsString} from 'class-validator';
 import { Transform } from 'class-transformer';
 
 // ===== ENUMS =====
@@ -56,6 +56,15 @@ export class BasePaginationDto {
   @IsOptional()
   @IsIn(['asc', 'desc'])
   order?: SortOrder = SortOrder.DESC;
+
+  @ApiProperty({
+      description: 'Search query (e.g. email, name, title)',
+      required: false,
+      example: 'gmail'
+  })
+  @IsOptional()
+  @IsString()
+  q?: string;
 }
 
 // ===== USER PAGINATION =====

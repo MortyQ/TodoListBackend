@@ -115,9 +115,8 @@ Retrieve paginated list of all users with sorting and search capabilities.
   })
   async findAll(
     @Query() paginationDto: UserPaginationDto,
-    @Query('q') searchQuery?: string,
   ) {
-    return this.usersService.findAll(paginationDto, searchQuery);
+    return this.usersService.findAll(paginationDto);
   }
 
   @Get(':id')
