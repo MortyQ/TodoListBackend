@@ -11,6 +11,7 @@ import { ListsModule } from './lists/lists.module';
 import { TasksModule } from './tasks/tasks.module';
 import { HealthModule } from './health/health.module';
 import { PermissionsModule } from './permissions/permissions.module';
+import { AnalyticsModule } from './analytics/analytics.module';
 
 // Импортируем конфигурацию и общие компоненты
 import { AppConfigModule } from './config/app-config.module';
@@ -56,6 +57,7 @@ import { ThrottlerGuard } from '@nestjs/throttler';
     TasksModule,
     HealthModule,
     PermissionsModule,
+    AnalyticsModule,
   ],
   providers: [
     // Глобальный фильтр для обработки всех исключений

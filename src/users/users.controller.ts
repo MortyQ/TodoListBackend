@@ -70,7 +70,7 @@ Retrieve paginated list of all users with sorting and search capabilities.
   @ApiQuery({
     name: 'q',
     required: false,
-    description: 'Search by email (case-insensitive)',
+    description: 'Search by email or name (case-insensitive)',
     example: 'gmail'
   })
   @ApiResponse({
@@ -99,6 +99,16 @@ Retrieve paginated list of all users with sorting and search capabilities.
           type: 'object',
           properties: {
             total: { type: 'integer', example: 100, description: 'Total number of records' },
+            limit: { type: 'integer', example: 20, description: 'Records per page' },
+            offset: { type: 'integer', example: 0, description: 'Current offset' },
+            hasMore: { type: 'boolean', example: true, description: 'Whether more records exist' },
+            currentPage: { type: 'integer', example: 1, description: 'Current page number' },
+            totalPages: { type: 'integer', example: 5, description: 'Total number of pages' }
+          }
+        }
+      }
+    }
+  })
             limit: { type: 'integer', example: 20, description: 'Records per page' },
             offset: { type: 'integer', example: 0, description: 'Current offset' },
             hasMore: { type: 'boolean', example: true, description: 'Whether more records exist' },

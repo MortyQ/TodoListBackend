@@ -27,10 +27,15 @@ export class ListsService {
 
   // Получение всех списков пользователя с пагинацией
   async findAll(userId: string, userRole: string, paginationDto: ListPaginationDto) {
-    const { limit, offset, sort, order } = paginationDto;
+    const { limit, offset, sort, order, q } = paginationDto;
 
     // Строим фильтр: админ видит все списки, обычный пользователь - только свои
     const filter: any = userRole === UserRole.ADMIN ? {} : { ownerId: userId };
+
+    // Добавляем поиск по названию
+    if (q) {
+      filter.title = { $regex: q, $options: 'i' };
+    }
 
     // Строим сортировку
     const sortOption: any = {};

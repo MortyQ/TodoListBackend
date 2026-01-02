@@ -51,7 +51,9 @@ export class UsersService {
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    return user;
+    // Явно преобразуем в объект и добавляем isAdmin, если вдруг виртуальное поле не срабатывает
+    const userObj = user.toObject({ virtuals: true });
+    return userObj as any;
   }
 
   // Обновление профиля пользователя (самим пользователем)
