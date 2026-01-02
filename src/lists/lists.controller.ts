@@ -75,6 +75,12 @@ Regular users see only their lists, admins see all lists.
     example: 'desc',
     schema: { type: 'string', enum: ['asc', 'desc'], default: 'desc' }
   })
+  @ApiQuery({
+    name: 'q',
+    required: false,
+    description: 'Search by list title',
+    example: 'Work'
+  })
   @ApiResponse({
     status: 200,
     description: 'Lists with pagination',

@@ -109,16 +109,6 @@ Retrieve paginated list of all users with sorting and search capabilities.
       }
     }
   })
-            limit: { type: 'integer', example: 20, description: 'Records per page' },
-            offset: { type: 'integer', example: 0, description: 'Current offset' },
-            hasMore: { type: 'boolean', example: true, description: 'Whether more records exist' },
-            currentPage: { type: 'integer', example: 1, description: 'Current page number' },
-            totalPages: { type: 'integer', example: 5, description: 'Total number of pages' }
-          }
-        }
-      }
-    }
-  })
   @ApiResponse({
     status: 403,
     description: 'Access denied - admin role required'
