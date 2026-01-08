@@ -85,4 +85,16 @@ export class ListResponseDto {
     example: '2023-01-01T00:00:00.000Z'
   })
   updatedAt: Date;
+
+  @ApiProperty({
+    description: 'Total number of tasks in the list',
+    example: 10
+  })
+  totalTasks: number;
+
+  @ApiProperty({
+    description: 'Number of completed tasks in the list',
+    example: 5
+  })
+  completedTasks: number;
 }

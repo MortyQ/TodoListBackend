@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/commo
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { List } from './schemas/list.schema';
-import { Task } from '../tasks/schemas/task.schema';
+import { Task, TaskStatus } from '../tasks/schemas/task.schema';
 import { CreateListDto, UpdateListDto } from './dto/list.dto';
 import { ListPaginationDto, createPaginationMeta } from '../common/dto/pagination.dto';
 import { UserRole } from '../users/schemas/user.schema';
@@ -14,15 +14,57 @@ export class ListsService {
     @InjectModel(Task.name) private taskModel: Model<Task>,
   ) {}
 
+  // Helper to enrich lists with task counts
+  private async enrichListsWithTaskCounts(lists: List[]): Promise<any[]> {
+    if (!lists.length) return [];
+
+    const listIds = lists.map(l => l._id);
+
+    const taskStats = await this.taskModel.aggregate([
+      { $match: { listId: { $in: listIds } } },
+      {
+        $group: {
+          _id: '$listId',
+          total: { $sum: 1 },
+          completed: {
+            $sum: {
+              $cond: [{ $eq: ['$status', TaskStatus.DONE] }, 1, 0]
+            }
+          }
+        }
+      }
+    ]);
+
+    const statsMap = new Map(taskStats.map(s => [s._id.toString(), s]));
+
+    return lists.map(list => {
+      const listObj = list.toObject ? list.toObject() : list;
+      // Handle the case where _id might be an object or string
+      const listIdStr = listObj._id.toString();
+      const stats = statsMap.get(listIdStr) || { total: 0, completed: 0 };
+
+      return {
+        ...listObj,
+        totalTasks: stats.total,
+        completedTasks: stats.completed,
+      };
+    });
+  }
+
   // Создание нового списка
-  async create(createListDto: CreateListDto, ownerId: string): Promise<List> {
+  async create(createListDto: CreateListDto, ownerId: string): Promise<any> {
     const list = new this.listModel({
       ...createListDto,
       ownerId,
       deadline: createListDto.deadline ? new Date(createListDto.deadline) : undefined,
     });
 
-    return list.save();
+    const savedList = await list.save();
+    return {
+      ...savedList.toObject(),
+      totalTasks: 0,
+      completedTasks: 0
+    };
   }
 
   // Получение всех списков пользователя с пагинацией
@@ -53,14 +95,16 @@ export class ListsService {
       this.listModel.countDocuments(filter),
     ]);
 
+    const enrichedLists = await this.enrichListsWithTaskCounts(lists);
+
     return {
-      data: lists,
+      data: enrichedLists,
       pagination: createPaginationMeta(total, limit, offset),
     };
   }
 
   // Получение конкретного списка
-  async findOne(id: string, userId: string, userRole: string): Promise<List> {
+  async findOne(id: string, userId: string, userRole: string): Promise<any> {
     const list = await this.listModel
       .findById(id)
       .populate('ownerId', 'email name');
@@ -74,11 +118,12 @@ export class ListsService {
       throw new ForbiddenException('You can only access your own lists');
     }
 
-    return list;
+    const [enrichedList] = await this.enrichListsWithTaskCounts([list]);
+    return enrichedList;
   }
 
   // Обновление списка
-  async update(id: string, updateListDto: UpdateListDto, userId: string, userRole: string): Promise<List> {
+  async update(id: string, updateListDto: UpdateListDto, userId: string, userRole: string): Promise<any> {
     const list = await this.listModel.findById(id);
 
     if (!list) {
@@ -104,7 +149,8 @@ export class ListsService {
       { new: true },
     ).populate('ownerId', 'email name');
 
-    return updatedList;
+    const [enrichedList] = await this.enrichListsWithTaskCounts([updatedList]);
+    return enrichedList;
   }
 
   // Удаление списка
