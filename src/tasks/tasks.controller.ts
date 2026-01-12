@@ -279,6 +279,27 @@ Retrieve paginated list of tasks with advanced sorting, filtering and search.
     return this.tasksService.getStarredTasks(req.user.id, req.user.role, limitNum);
   }
 
+  // Получение задач с дедлайнами (upcoming / range)
+  @Get('/deadlines')
+  @RequirePermission(PERMISSIONS.READ_TASK)
+  @ApiOperation({ summary: 'Get tasks with upcoming deadlines (or within date range)' })
+  @ApiQuery({ name: 'limit', required: false, description: 'Limit results (default: 20)', example: 20 })
+  @ApiQuery({ name: 'startDate', required: false, description: 'Start date (YYYY-MM-DD)', example: '2023-01-01' })
+  @ApiQuery({ name: 'endDate', required: false, description: 'End date (YYYY-MM-DD)', example: '2023-12-31' })
+  @ApiResponse({
+    status: 200,
+    description: 'List of tasks with deadlines'
+  })
+  async getTasksWithDeadlines(
+    @Query('limit') limit: string,
+    @Query('startDate') startDate: string,
+    @Query('endDate') endDate: string,
+    @Req() req: any
+  ) {
+    const limitNum = limit ? parseInt(limit, 10) : 20;
+    return this.tasksService.getTasksWithDeadlines(req.user.id, req.user.role, limitNum, startDate, endDate);
+  }
+
   // Переключение статуса isStarred (add/remove from starred)
   @Patch('/:taskId/toggle-star')
   @RequirePermission(PERMISSIONS.UPDATE_TASK)
@@ -298,6 +319,36 @@ Retrieve paginated list of tasks with advanced sorting, filtering and search.
   })
   async toggleStar(@Param('taskId') taskId: string, @Req() req: any) {
     return this.tasksService.toggleStar(taskId, req.user.id, req.user.role);
+  }
+
+  // Методы для Weekly Goals (Фокус недели)
+
+  @Get('/weekly-goals')
+  @RequirePermission(PERMISSIONS.READ_TASK)
+  @ApiOperation({ summary: 'Get current weekly focus goals' })
+  @ApiResponse({
+    status: 200,
+    description: 'List of weekly goals',
+    type: [Task]
+  })
+  async getWeeklyGoals(@Req() req: any) {
+    return this.tasksService.getWeeklyGoals(req.user.id, req.user.role);
+  }
+
+  @Patch('/:taskId/toggle-weekly-goal')
+  @RequirePermission(PERMISSIONS.UPDATE_TASK)
+  @ApiOperation({ summary: 'Toggle task weekly goal status (add/remove from focus)' })
+  @ApiResponse({
+    status: 200,
+    description: 'Task weekly goal status toggled',
+    type: Task
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Maximum 3 weekly goals allowed or Access denied'
+  })
+  async toggleWeeklyGoal(@Param('taskId') taskId: string, @Req() req: any) {
+    return this.tasksService.toggleWeeklyGoal(taskId, req.user.id, req.user.role);
   }
 
   @Delete('/:taskId')

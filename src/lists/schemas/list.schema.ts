@@ -44,6 +44,18 @@ export class List extends Document {
   deadline?: Date;
 
   @ApiProperty({
+    description: 'List color in HEX format',
+    example: '#FF5733',
+    required: false
+  })
+  @Prop({
+    required: false,
+    type: String,
+    default: null,
+  })
+  hexColor?: string;
+
+  @ApiProperty({
     description: 'List creation date',
     example: '2023-01-01T00:00:00.000Z'
   })

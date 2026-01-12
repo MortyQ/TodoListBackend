@@ -108,5 +108,68 @@ export class AnalyticsService {
       .populate('listId', 'title')
       .exec();
   }
-}
 
+  async getDailyActivity(userId: string, userRole: string, startDate?: string, endDate?: string) {
+    // Determine date range (default to last 7 days)
+    const end = endDate ? new Date(endDate) : new Date();
+    const start = startDate ? new Date(startDate) : new Date();
+    if (!startDate) {
+      start.setDate(end.getDate() - 7);
+    }
+
+    // Adjust start to beginning of day and end to end of day
+    start.setHours(0, 0, 0, 0);
+    end.setHours(23, 59, 59, 999);
+
+    let matchStage: any = { deletedAt: null };
+
+    if (userRole !== UserRole.ADMIN) {
+      const userLists = await this.listModel.find({ ownerId: userId }).select('_id');
+      const listIds = userLists.map(list => list._id);
+      matchStage.listId = { $in: listIds };
+    }
+
+    // Helper to group by date
+    const groupByDate = (dateField: string) => [
+      {
+        $match: {
+          ...matchStage,
+          [dateField]: { $gte: start, $lte: end }
+        }
+      },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: `$${dateField}` } },
+          count: { $sum: 1 }
+        }
+      }
+    ];
+
+    const [createdStats, completedStats] = await Promise.all([
+      this.taskModel.aggregate(groupByDate('createdAt')),
+      this.taskModel.aggregate(groupByDate('completedAt'))
+    ]);
+
+    // Merge logic to ensure all dates in range are present
+    const activityMap = new Map<string, { date: string, created: number, completed: number }>();
+
+    // Fill with empty data for all days in range
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+      const dateStr = d.toISOString().split('T')[0];
+      activityMap.set(dateStr, { date: dateStr, created: 0, completed: 0 });
+    }
+
+    createdStats.forEach(stat => {
+      const entry = activityMap.get(stat._id);
+      if (entry) entry.created = stat.count;
+    });
+
+    completedStats.forEach(stat => {
+      const entry = activityMap.get(stat._id);
+      if (entry) entry.completed = stat.count;
+    });
+
+    // Return sorted array
+    return Array.from(activityMap.values()).sort((a, b) => a.date.localeCompare(b.date));
+  }
+}

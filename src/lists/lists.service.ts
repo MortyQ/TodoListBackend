@@ -21,7 +21,8 @@ export class ListsService {
     const listIds = lists.map(l => l._id);
 
     const taskStats = await this.taskModel.aggregate([
-      { $match: { listId: { $in: listIds } } },
+      { $match: { listId: { $in: listIds }, deletedAt: null } },
+      { $sort: { order: 1, createdAt: -1 } },
       {
         $group: {
           _id: '$listId',
@@ -29,6 +30,13 @@ export class ListsService {
           completed: {
             $sum: {
               $cond: [{ $eq: ['$status', TaskStatus.DONE] }, 1, 0]
+            }
+          },
+          tasks: {
+            $push: {
+              id: '$_id',
+              title: '$title',
+              status: '$status'
             }
           }
         }
@@ -41,12 +49,13 @@ export class ListsService {
       const listObj = list.toObject ? list.toObject() : list;
       // Handle the case where _id might be an object or string
       const listIdStr = listObj._id.toString();
-      const stats = statsMap.get(listIdStr) || { total: 0, completed: 0 };
+      const stats = statsMap.get(listIdStr) || { total: 0, completed: 0, tasks: [] };
 
       return {
         ...listObj,
         totalTasks: stats.total,
         completedTasks: stats.completed,
+        tasks: stats.tasks,
       };
     });
   }

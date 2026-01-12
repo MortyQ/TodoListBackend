@@ -94,6 +94,16 @@ export class CreateTaskDto {
   isStarred?: boolean;
 
   @ApiProperty({
+    description: 'Mark task as weekly goal (focus)',
+    example: false,
+    required: false,
+    default: false
+  })
+  @IsOptional()
+  @Transform(({ value }) => value === true || value === 'true')
+  isWeeklyGoal?: boolean;
+
+  @ApiProperty({
     description: 'Task order in list',
     example: 1,
     required: false

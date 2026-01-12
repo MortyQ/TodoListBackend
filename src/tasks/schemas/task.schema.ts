@@ -156,6 +156,19 @@ export class Task extends Document {
   isStarred: boolean;
 
   @ApiProperty({
+    description: 'Is task marked as weekly goal (focus)',
+    example: false,
+    default: false
+  })
+  @Prop({
+    required: true,
+    type: Boolean,
+    default: false,
+    index: true, // для быстрого поиска задач в фокусе недели
+  })
+  isWeeklyGoal: boolean;
+
+  @ApiProperty({
     description: 'Task completion date',
     example: '2023-01-15T10:30:00.000Z',
     required: false

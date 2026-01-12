@@ -21,6 +21,15 @@ export class CreateListDto {
   @IsOptional()
   @IsDateString({}, { message: 'Deadline must be a valid ISO date string' })
   deadline?: string;
+
+  @ApiProperty({
+    description: 'List color in HEX format',
+    example: '#FF5733',
+    required: false
+  })
+  @IsOptional()
+  @IsString()
+  hexColor?: string;
 }
 
 // DTO для обновления списка
@@ -45,6 +54,15 @@ export class UpdateListDto {
   @IsOptional()
   @IsDateString({}, { message: 'Deadline must be a valid ISO date string' })
   deadline?: string;
+
+  @ApiProperty({
+    description: 'List color in HEX format',
+    example: '#FF5733',
+    required: false
+  })
+  @IsOptional()
+  @IsString()
+  hexColor?: string;
 }
 
 // DTO для ответа со списком
@@ -75,6 +93,13 @@ export class ListResponseDto {
   deadline?: Date;
 
   @ApiProperty({
+    description: 'List color in HEX format',
+    example: '#FF5733',
+    required: false
+  })
+  hexColor?: string;
+
+  @ApiProperty({
     description: 'Creation date',
     example: '2023-01-01T00:00:00.000Z'
   })
@@ -97,4 +122,23 @@ export class ListResponseDto {
     example: 5
   })
   completedTasks: number;
+
+  @ApiProperty({
+    description: 'Simplified tasks list',
+    example: [{ id: '507f1f77bcf86cd799439011', title: 'Buy milk', status: 'todo' }],
+    type: 'array',
+    items: {
+      type: 'object',
+      properties: {
+        id: { type: 'string' },
+        title: { type: 'string' },
+        status: { type: 'string' }
+      }
+    }
+  })
+  tasks?: {
+    id: string;
+    title: string;
+    status: string;
+  }[];
 }

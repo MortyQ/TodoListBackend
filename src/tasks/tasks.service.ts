@@ -257,6 +257,55 @@ export class TasksService {
     };
   }
 
+  // Получение задач с дедлайнами (предстоящие или в диапазоне)
+  async getTasksWithDeadlines(
+    userId: string,
+    userRole: string,
+    limit: number = 20,
+    startDate?: string,
+    endDate?: string,
+  ) {
+    // Получаем все списки пользователя
+    const userLists = await this.listModel.find(
+      userRole === UserRole.ADMIN ? {} : { ownerId: userId }
+    ).select('_id');
+
+    const listIds = userLists.map(list => list._id);
+
+    // Базовый фильтр
+    const filter: any = {
+      listId: { $in: listIds },
+      deletedAt: null,
+      deadline: { $ne: null }, // Только задачи с дедлайном
+      status: { $ne: TaskStatus.DONE } // Только невыполненные задачи (обычно дедлайны интересны для активных задач)
+    };
+
+    if (startDate || endDate) {
+      filter.deadline = { ...filter.deadline };
+      if (startDate) {
+        filter.deadline.$gte = new Date(startDate);
+      }
+      if (endDate) {
+        filter.deadline.$lte = new Date(endDate);
+      }
+    } else {
+      // По умолчанию возвращаем предстоящие дедлайны (от сегодня)
+      filter.deadline = { $gte: new Date() };
+    }
+
+    const tasks = await this.taskModel
+      .find(filter)
+      .populate('listId', 'title')
+      .sort({ deadline: 1, priority: -1 }) // Сортируем: ближайший дедлайн, потом приоритет
+      .limit(limit)
+      .exec();
+
+    return {
+      data: tasks,
+      total: tasks.length,
+    };
+  }
+
   // Переключение статуса isStarred для задачи
   async toggleStar(taskId: string, userId: string, userRole: string): Promise<Task> {
     const task = await this.taskModel
@@ -281,5 +330,119 @@ export class TasksService {
     ).populate('listId');
 
     return updatedTask;
+  }
+
+  // Получение целей на неделю (isWeeklyGoal=true)
+  async getWeeklyGoals(userId: string, userRole: string) {
+    // Получаем все списки пользователя
+    const userLists = await this.listModel.find(
+      userRole === UserRole.ADMIN ? {} : { ownerId: userId }
+    ).select('_id');
+
+    const listIds = userLists.map(list => list._id);
+
+    // Ищем задачи с флагом isWeeklyGoal
+    const goals = await this.taskModel
+      .find({
+        listId: { $in: listIds },
+        isWeeklyGoal: true,
+        deletedAt: null,
+      })
+      .populate('listId', 'title')
+      .sort({ priority: -1, order: 1 })
+      .exec();
+
+    return {
+      data: goals,
+      total: goals.length,
+    };
+  }
+
+  // Добавление задачи в цели недели
+  async addWeeklyGoal(taskId: string, userId: string, userRole: string): Promise<Task> {
+    const task = await this.taskModel
+      .findOne({ _id: taskId, deletedAt: null })
+      .populate('listId');
+
+    if (!task) {
+      throw new NotFoundException('Task not found');
+    }
+
+    // Проверяем доступ
+    const list = task.listId as any;
+    if (userRole !== UserRole.ADMIN && list.ownerId.toString() !== userId) {
+      throw new ForbiddenException('You can only update tasks from your own lists');
+    }
+
+    // Проверяем лимит (максимум 3 цели)
+    if (!task.isWeeklyGoal) {
+      // Ищем списки пользователя чтобы проверить общее количество целей
+      const userLists = await this.listModel.find(
+        userRole === UserRole.ADMIN ? {} : { ownerId: userId }
+      ).select('_id');
+      const listIds = userLists.map(l => l._id);
+
+      const count = await this.taskModel.countDocuments({
+        listId: { $in: listIds },
+        isWeeklyGoal: true,
+        deletedAt: null
+      });
+
+      if (count >= 3) {
+        throw new ForbiddenException('Maximum 3 weekly goals allowed');
+      }
+    }
+
+    // Обновляем задачу
+    const updatedTask = await this.taskModel.findByIdAndUpdate(
+      taskId,
+      { isWeeklyGoal: true },
+      { new: true },
+    ).populate('listId');
+
+    return updatedTask;
+  }
+
+  // Удаление задачи из целей недели
+  async removeWeeklyGoal(taskId: string, userId: string, userRole: string): Promise<Task> {
+    const task = await this.taskModel
+      .findOne({ _id: taskId, deletedAt: null })
+      .populate('listId');
+
+    if (!task) {
+      throw new NotFoundException('Task not found');
+    }
+
+    // Проверяем доступ
+    const list = task.listId as any;
+    if (userRole !== UserRole.ADMIN && list.ownerId.toString() !== userId) {
+      throw new ForbiddenException('You can only update tasks from your own lists');
+    }
+
+    // Обновляем задачу
+    const updatedTask = await this.taskModel.findByIdAndUpdate(
+      taskId,
+      { isWeeklyGoal: false },
+      { new: true },
+    ).populate('listId');
+
+    return updatedTask;
+  }
+
+  // Переключение статуса isWeeklyGoal
+  async toggleWeeklyGoal(taskId: string, userId: string, userRole: string): Promise<Task> {
+    const task = await this.taskModel
+      .findOne({ _id: taskId, deletedAt: null })
+      .populate('listId');
+
+    if (!task) {
+      throw new NotFoundException('Task not found');
+    }
+
+    if (task.isWeeklyGoal) {
+      return this.removeWeeklyGoal(taskId, userId, userRole);
+    } else {
+      return this.addWeeklyGoal(taskId, userId, userRole);
+    }
   }
 }

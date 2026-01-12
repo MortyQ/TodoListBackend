@@ -88,5 +88,42 @@ export class AnalyticsController {
   async getTasksByPriority(@Req() req: any) {
     return this.analyticsService.getTasksByPriority(req.user.id, req.user.role);
   }
+
+  @Get('daily-activity')
+  @ApiOperation({ summary: 'Get daily task activity (created vs completed)' })
+  @ApiQuery({
+    name: 'startDate',
+    required: false,
+    description: 'Start date (YYYY-MM-DD)',
+    example: '2023-01-01'
+  })
+  @ApiQuery({
+    name: 'endDate',
+    required: false,
+    description: 'End date (YYYY-MM-DD)',
+    example: '2023-01-07'
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Daily activity stats',
+    schema: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          date: { type: 'string', example: '2023-01-01' },
+          created: { type: 'integer', example: 5 },
+          completed: { type: 'integer', example: 3 }
+        }
+      }
+    }
+  })
+  async getDailyActivity(
+    @Req() req: any,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string
+  ) {
+    return this.analyticsService.getDailyActivity(req.user.id, req.user.role, startDate, endDate);
+  }
 }
 
