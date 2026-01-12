@@ -106,7 +106,21 @@ Regular users see only their lists, admins see all lists.
               createdAt: { type: 'string', format: 'date-time', example: '2024-12-01T10:00:00.000Z' },
               updatedAt: { type: 'string', format: 'date-time', example: '2024-12-20T15:30:00.000Z' },
               totalTasks: { type: 'integer', example: 10, description: 'Total tasks count' },
-              completedTasks: { type: 'integer', example: 5, description: 'Completed tasks count' }
+              completedTasks: { type: 'integer', example: 5, description: 'Completed tasks count' },
+              hexColor: { type: 'string', example: '#FF5733', nullable: true, description: 'List color' },
+              tasks: {
+                type: 'array',
+                description: 'Simplified tasks list',
+                example: [{ id: '507f1f77bcf86cd799439011', title: 'Buy milk', status: 'todo' }],
+                items: {
+                  type: 'object',
+                  properties: {
+                    id: { type: 'string' },
+                    title: { type: 'string' },
+                    status: { type: 'string' }
+                  }
+                }
+              }
             }
           }
         },
