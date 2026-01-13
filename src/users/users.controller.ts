@@ -73,6 +73,13 @@ Retrieve paginated list of all users with sorting and search capabilities.
     description: 'Search by email or name (case-insensitive)',
     example: 'gmail'
   })
+  @ApiQuery({
+    name: 'role',
+    required: false,
+    description: 'Filter by user role',
+    enum: UserRole, // Use the Enum here
+    example: UserRole.USER
+  })
   @ApiResponse({
     status: 200,
     description: 'Users list with pagination',

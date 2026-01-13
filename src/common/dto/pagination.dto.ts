@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {IsOptional, IsInt, Min, Max, IsIn, IsString} from 'class-validator';
+import {IsOptional, IsInt, Min, Max, IsIn, IsString, IsEnum} from 'class-validator';
 import { Transform } from 'class-transformer';
+import { UserRole } from '../../users/schemas/user.schema';
 
 // ===== ENUMS =====
 
@@ -83,6 +84,16 @@ export class UserPaginationDto extends BasePaginationDto {
   @IsOptional()
   @IsIn(UserSortFields)
   sort?: UserSortField = 'createdAt';
+
+  @ApiProperty({
+    description: 'Filter by user role',
+    example: UserRole.USER,
+    enum: UserRole,
+    required: false
+  })
+  @IsOptional()
+  @IsEnum(UserRole)
+  role?: UserRole;
 }
 
 // ===== LIST PAGINATION =====

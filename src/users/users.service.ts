@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { User, UserRole } from './schemas/user.schema';
+import { User } from './schemas/user.schema';
 import { UpdateProfileDto, UpdateUserRoleDto, UpdateUserPermissionsDto } from './dto/user.dto';
 import { UserPaginationDto, createPaginationMeta } from '../common/dto/pagination.dto';
 
@@ -12,8 +12,8 @@ export class UsersService {
   ) {}
 
   // Получение всех пользователей с пагинацией (только для админа)
-  async findAll(paginationDto: UserPaginationDto, searchQuery?: string) {
-    const { limit, offset, sort, order, q } = paginationDto;
+  async findAll(paginationDto: UserPaginationDto) {
+    const { limit, offset, sort, order, q, role } = paginationDto;
 
     // Строим фильтр для поиска
     const filter: any = {};
@@ -22,6 +22,10 @@ export class UsersService {
           { email: { $regex: q, $options: 'i' } },
           { name: { $regex: q, $options: 'i' } }
       ]
+    }
+
+    if (role) {
+      filter.role = role;
     }
 
     // Строим сортировку
