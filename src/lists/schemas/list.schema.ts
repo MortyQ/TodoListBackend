@@ -81,6 +81,13 @@ ListSchema.set('toJSON', {
   transform: function (doc, ret) {
     delete ret._id;
     delete ret.__v;
+    // Гарантируем, что deadline и hexColor всегда присутствуют в ответе (даже если null)
+    if (!ret.hasOwnProperty('deadline')) {
+      ret.deadline = null;
+    }
+    if (!ret.hasOwnProperty('hexColor')) {
+      ret.hexColor = null;
+    }
     return ret;
   },
 });

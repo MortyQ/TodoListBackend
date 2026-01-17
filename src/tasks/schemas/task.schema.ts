@@ -221,6 +221,17 @@ TaskSchema.set('toJSON', {
   transform: function (doc, ret) {
     delete ret._id;
     delete ret.__v;
+    // Гарантируем, что важные опциональные поля всегда присутствуют в ответе (даже если null)
+    // Это делает API более предсказуемым для фронтенда
+    if (!ret.hasOwnProperty('deadline')) {
+      ret.deadline = null;
+    }
+    if (!ret.hasOwnProperty('dueDate')) {
+      ret.dueDate = null;
+    }
+    if (!ret.hasOwnProperty('completedAt')) {
+      ret.completedAt = null;
+    }
     return ret;
   },
 });
