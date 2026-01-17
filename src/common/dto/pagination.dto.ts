@@ -112,6 +112,19 @@ export class ListPaginationDto extends BasePaginationDto {
   @IsOptional()
   @IsIn(ListSortFields)
   sort?: ListSortField = 'createdAt';
+
+  @ApiProperty({
+    description: 'Filter by ownership (only for admins). If true, shows only current user\'s lists. If false or not set, shows all lists (admin) or own lists (regular user)',
+    example: true,
+    required: false
+  })
+  @IsOptional()
+  @Transform(({ value }) => {
+    if (value === 'true' || value === true) return true;
+    if (value === 'false' || value === false) return false;
+    return undefined;
+  })
+  isOwn?: boolean;
 }
 
 // ===== TASK PAGINATION =====

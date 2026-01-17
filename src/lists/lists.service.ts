@@ -78,10 +78,25 @@ export class ListsService {
 
   // Получение всех списков пользователя с пагинацией
   async findAll(userId: string, userRole: string, paginationDto: ListPaginationDto) {
-    const { limit, offset, sort, order, q } = paginationDto;
+    const { limit, offset, sort, order, q, isOwn } = paginationDto;
 
-    // Строим фильтр: админ видит все списки, обычный пользователь - только свои
-    const filter: any = userRole === UserRole.ADMIN ? {} : { ownerId: userId };
+    // Строим фильтр:
+    // - Обычный пользователь всегда видит только свои списки
+    // - Админ видит все списки, но может фильтровать по isOwn:
+    //   * isOwn = true -> только свои
+    //   * isOwn = false или undefined -> все листы
+    let filter: any = {};
+
+    if (userRole === UserRole.ADMIN) {
+      // Админ: если isOwn = true, показываем только его листы
+      if (isOwn === true) {
+        filter.ownerId = userId;
+      }
+      // Если isOwn = false или не задан, показываем все листы (фильтр остается пустым)
+    } else {
+      // Обычный пользователь всегда видит только свои
+      filter.ownerId = userId;
+    }
 
     // Добавляем поиск по названию
     if (q) {

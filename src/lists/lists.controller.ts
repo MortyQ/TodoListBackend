@@ -33,7 +33,7 @@ export class ListsController {
     summary: 'Get all user lists',
     description: `
 Retrieve paginated list of todo lists with sorting capabilities.
-Regular users see only their lists, admins see all lists.
+Regular users see only their lists, admins can see all lists or filter by ownership.
 
 **Sorting options:**
 - \`createdAt\` - Sort by creation date
@@ -41,10 +41,16 @@ Regular users see only their lists, admins see all lists.
 - \`title\` - Sort alphabetically by title
 - \`deadline\` - Sort by deadline date
 
+**Filtering (Admin only):**
+- \`isOwn=true\` - Show only current admin's lists
+- \`isOwn=false\` or not set - Show all users' lists
+
 **Example requests:**
 - \`GET /lists?sort=title&order=asc\` - Lists sorted by title A-Z
 - \`GET /lists?sort=deadline&order=asc\` - Lists with nearest deadlines first
 - \`GET /lists?sort=createdAt&order=desc&limit=5\` - 5 most recent lists
+- \`GET /lists?isOwn=true\` - (Admin) Only my lists
+- \`GET /lists?isOwn=false\` - (Admin) All users' lists
     `
   })
   @ApiQuery({
@@ -80,6 +86,13 @@ Regular users see only their lists, admins see all lists.
     required: false,
     description: 'Search by list title',
     example: 'Work'
+  })
+  @ApiQuery({
+    name: 'isOwn',
+    required: false,
+    description: 'Filter by ownership (Admin only). true = only my lists, false/not set = all lists',
+    example: true,
+    schema: { type: 'boolean' }
   })
   @ApiResponse({
     status: 200,
