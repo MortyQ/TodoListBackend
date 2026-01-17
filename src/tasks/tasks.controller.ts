@@ -199,26 +199,6 @@ Retrieve paginated list of tasks with advanced sorting, filtering and search.
     );
   }
 
-  // Получение конкретной задачи
-  @Get('/:taskId')
-  @RequirePermission(PERMISSIONS.READ_TASK)
-  @ApiOperation({ summary: 'Get specific task' })
-  @ApiResponse({
-    status: 200,
-    description: 'Task details',
-    type: Task
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Task not found'
-  })
-  @ApiResponse({
-    status: 403,
-    description: 'Access denied - task from another user list'
-  })
-  async findOne(@Param('taskId') taskId: string, @Req() req: any) {
-    return this.tasksService.findOne(taskId, req.user.id, req.user.role);
-  }
 
   @Patch('/:taskId')
   @RequirePermission(PERMISSIONS.UPDATE_TASK)
@@ -333,6 +313,27 @@ Retrieve paginated list of tasks with advanced sorting, filtering and search.
   })
   async getWeeklyGoals(@Req() req: any) {
     return this.tasksService.getWeeklyGoals(req.user.id, req.user.role);
+  }
+
+  // Получение конкретной задачи
+  @Get('/:taskId')
+  @RequirePermission(PERMISSIONS.READ_TASK)
+  @ApiOperation({ summary: 'Get specific task' })
+  @ApiResponse({
+    status: 200,
+    description: 'Task details',
+    type: Task
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Task not found'
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Access denied - task from another user list'
+  })
+  async findOne(@Param('taskId') taskId: string, @Req() req: any) {
+    return this.tasksService.findOne(taskId, req.user.id, req.user.role);
   }
 
   @Patch('/:taskId/toggle-weekly-goal')

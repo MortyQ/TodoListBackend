@@ -276,21 +276,23 @@ export class TasksService {
     const filter: any = {
       listId: { $in: listIds },
       deletedAt: null,
-      deadline: { $ne: null }, // Только задачи с дедлайном
+      deadline: { $exists: true, $ne: null }, // Только задачи с дедлайном
       status: { $ne: TaskStatus.DONE } // Только невыполненные задачи (обычно дедлайны интересны для активных задач)
     };
 
+    // Добавляем фильтры по датам
     if (startDate || endDate) {
-      filter.deadline = { ...filter.deadline };
+      const deadlineFilter: any = { $exists: true, $ne: null };
       if (startDate) {
-        filter.deadline.$gte = new Date(startDate);
+        deadlineFilter.$gte = new Date(startDate);
       }
       if (endDate) {
-        filter.deadline.$lte = new Date(endDate);
+        deadlineFilter.$lte = new Date(endDate);
       }
+      filter.deadline = deadlineFilter;
     } else {
       // По умолчанию возвращаем предстоящие дедлайны (от сегодня)
-      filter.deadline = { $gte: new Date() };
+      filter.deadline = { $exists: true, $ne: null, $gte: new Date() };
     }
 
     const tasks = await this.taskModel
