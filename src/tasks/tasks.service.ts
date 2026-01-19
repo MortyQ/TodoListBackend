@@ -238,11 +238,16 @@ export class TasksService {
     ).select('_id');
 
     const listIds = userLists.map(list => list._id);
+    const listIdStrings = listIds.map(id => id.toString());
 
     // Ищем важные задачи из этих списков
+    // Поддерживаем как ObjectId, так и строковые listId
     const starredTasks = await this.taskModel
       .find({
-        listId: { $in: listIds },
+        $or: [
+          { listId: { $in: listIds } },
+          { listId: { $in: listIdStrings } }
+        ],
         isStarred: true,
         deletedAt: null,
       })
@@ -271,10 +276,14 @@ export class TasksService {
     ).select('_id');
 
     const listIds = userLists.map(list => list._id);
+    const listIdStrings = listIds.map(id => id.toString());
 
-    // Базовый фильтр
+    // Базовый фильтр - поддерживаем как ObjectId, так и строковые listId
     const filter: any = {
-      listId: { $in: listIds },
+      $or: [
+        { listId: { $in: listIds } },
+        { listId: { $in: listIdStrings } }
+      ],
       deletedAt: null,
       deadline: { $exists: true, $ne: null }, // Только задачи с дедлайном
       status: { $ne: TaskStatus.DONE } // Только невыполненные задачи (обычно дедлайны интересны для активных задач)
@@ -301,6 +310,7 @@ export class TasksService {
       .sort({ deadline: 1, priority: -1 }) // Сортируем: ближайший дедлайн, потом приоритет
       .limit(limit)
       .exec();
+
 
     return {
       data: tasks,
@@ -342,11 +352,16 @@ export class TasksService {
     ).select('_id');
 
     const listIds = userLists.map(list => list._id);
+    const listIdStrings = listIds.map(id => id.toString());
 
     // Ищем задачи с флагом isWeeklyGoal
+    // Поддерживаем как ObjectId, так и строковые listId
     const goals = await this.taskModel
       .find({
-        listId: { $in: listIds },
+        $or: [
+          { listId: { $in: listIds } },
+          { listId: { $in: listIdStrings } }
+        ],
         isWeeklyGoal: true,
         deletedAt: null,
       })
@@ -383,9 +398,13 @@ export class TasksService {
         userRole === UserRole.ADMIN ? {} : { ownerId: userId }
       ).select('_id');
       const listIds = userLists.map(l => l._id);
+      const listIdStrings = listIds.map(id => id.toString());
 
       const count = await this.taskModel.countDocuments({
-        listId: { $in: listIds },
+        $or: [
+          { listId: { $in: listIds } },
+          { listId: { $in: listIdStrings } }
+        ],
         isWeeklyGoal: true,
         deletedAt: null
       });
