@@ -29,17 +29,30 @@ export class ListsService {
 
     const listIds = Array.from(listIdsMap.keys()).map(id => new Types.ObjectId(id));
 
+    // Важно: ищем таски как по ObjectId, так и по строковым ID (для совместимости)
+    // Некоторые таски могут иметь listId как строку, а не ObjectId
+    const listIdStrings = Array.from(listIdsMap.keys());
+
     const taskStats = await this.taskModel.aggregate([
       {
         $match: {
-          listId: { $in: listIds },
+          $or: [
+            { listId: { $in: listIds } },
+            { listId: { $in: listIdStrings } }
+          ],
           deletedAt: null
+        }
+      },
+      // Преобразуем listId в строку для единообразного группирования
+      {
+        $addFields: {
+          listIdStr: { $toString: '$listId' }
         }
       },
       { $sort: { order: 1, createdAt: -1 } },
       {
         $group: {
-          _id: '$listId',
+          _id: '$listIdStr', // Группируем по строковому ID
           total: { $sum: 1 },
           completed: {
             $sum: {
@@ -58,7 +71,8 @@ export class ListsService {
     ]);
 
     // Создаем Map для быстрого доступа к статистике по ID списка
-    const statsMap = new Map(taskStats.map(s => [s._id.toString(), s]));
+    // _id уже строка благодаря $toString в aggregation
+    const statsMap = new Map(taskStats.map(s => [s._id, s]));
 
     return Array.from(listIdsMap.entries()).map(([listIdStr, list]) => {
       const listObj = list.toObject ? list.toObject() : list;
