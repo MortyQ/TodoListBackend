@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { List } from './schemas/list.schema';
 import { Task, TaskStatus } from '../tasks/schemas/task.schema';
 import { CreateListDto, UpdateListDto } from './dto/list.dto';
@@ -19,15 +19,23 @@ export class ListsService {
     if (!lists.length) return [];
 
     // Преобразуем все ID в ObjectId для правильного сравнения в MongoDB
-    const listIds = lists.map(l => {
-      const id = l._id || l.id;
-      return typeof id === 'string' ? id : id.toString();
+    // Важно: получаем _id ДО вызова toObject/toJSON, так как toJSON удаляет _id
+    const listIdsMap = new Map<string, any>();
+    lists.forEach(list => {
+      const id = list._id || list.id;
+      const idStr = id.toString();
+      listIdsMap.set(idStr, list);
     });
+
+    const listIds = Array.from(listIdsMap.keys()).map(id => new Types.ObjectId(id));
+
+    console.log('🔍 Lists to enrich:', lists.length);
+    console.log('🔍 List IDs:', listIds.map(id => id.toString()));
 
     const taskStats = await this.taskModel.aggregate([
       {
         $match: {
-          listId: { $in: listIds.map(id => new this.listModel.base.Types.ObjectId(id)) },
+          listId: { $in: listIds },
           deletedAt: null
         }
       },
@@ -52,21 +60,28 @@ export class ListsService {
       }
     ]);
 
+    console.log('🔍 Aggregation result count:', taskStats.length);
+    if (taskStats.length > 0) {
+      console.log('🔍 First result:', JSON.stringify(taskStats[0], null, 2));
+    }
+
     // Создаем Map для быстрого доступа к статистике по ID списка
     const statsMap = new Map(taskStats.map(s => [s._id.toString(), s]));
 
-    return lists.map(list => {
+    console.log('🔍 Stats map keys:', Array.from(statsMap.keys()));
+
+    return Array.from(listIdsMap.entries()).map(([listIdStr, list]) => {
       const listObj = list.toObject ? list.toObject() : list;
-      // Получаем ID списка и приводим к строке для сравнения
-      const listId = listObj._id || listObj.id;
-      const listIdStr = typeof listId === 'string' ? listId : listId.toString();
       const stats = statsMap.get(listIdStr) || { total: 0, completed: 0, tasks: [] };
+
+      console.log(`🔍 List ${listIdStr}: found ${stats.total} tasks, tasks array length: ${stats.tasks?.length || 0}`);
 
       return {
         ...listObj,
+        id: listIdStr, // Добавляем id обратно, так как toJSON его удаляет
         totalTasks: stats.total,
         completedTasks: stats.completed,
-        tasks: stats.tasks,
+        tasks: stats.tasks || [],
       };
     });
   }
