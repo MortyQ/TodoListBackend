@@ -29,9 +29,6 @@ export class ListsService {
 
     const listIds = Array.from(listIdsMap.keys()).map(id => new Types.ObjectId(id));
 
-    console.log('🔍 Lists to enrich:', lists.length);
-    console.log('🔍 List IDs:', listIds.map(id => id.toString()));
-
     const taskStats = await this.taskModel.aggregate([
       {
         $match: {
@@ -60,21 +57,13 @@ export class ListsService {
       }
     ]);
 
-    console.log('🔍 Aggregation result count:', taskStats.length);
-    if (taskStats.length > 0) {
-      console.log('🔍 First result:', JSON.stringify(taskStats[0], null, 2));
-    }
-
     // Создаем Map для быстрого доступа к статистике по ID списка
     const statsMap = new Map(taskStats.map(s => [s._id.toString(), s]));
-
-    console.log('🔍 Stats map keys:', Array.from(statsMap.keys()));
 
     return Array.from(listIdsMap.entries()).map(([listIdStr, list]) => {
       const listObj = list.toObject ? list.toObject() : list;
       const stats = statsMap.get(listIdStr) || { total: 0, completed: 0, tasks: [] };
 
-      console.log(`🔍 List ${listIdStr}: found ${stats.total} tasks, tasks array length: ${stats.tasks?.length || 0}`);
 
       return {
         ...listObj,
