@@ -18,10 +18,19 @@ export class ListsService {
   private async enrichListsWithTaskCounts(lists: List[]): Promise<any[]> {
     if (!lists.length) return [];
 
-    const listIds = lists.map(l => l._id);
+    // Преобразуем все ID в ObjectId для правильного сравнения в MongoDB
+    const listIds = lists.map(l => {
+      const id = l._id || l.id;
+      return typeof id === 'string' ? id : id.toString();
+    });
 
     const taskStats = await this.taskModel.aggregate([
-      { $match: { listId: { $in: listIds }, deletedAt: null } },
+      {
+        $match: {
+          listId: { $in: listIds.map(id => new this.listModel.base.Types.ObjectId(id)) },
+          deletedAt: null
+        }
+      },
       { $sort: { order: 1, createdAt: -1 } },
       {
         $group: {
@@ -43,12 +52,14 @@ export class ListsService {
       }
     ]);
 
+    // Создаем Map для быстрого доступа к статистике по ID списка
     const statsMap = new Map(taskStats.map(s => [s._id.toString(), s]));
 
     return lists.map(list => {
       const listObj = list.toObject ? list.toObject() : list;
-      // Handle the case where _id might be an object or string
-      const listIdStr = listObj._id.toString();
+      // Получаем ID списка и приводим к строке для сравнения
+      const listId = listObj._id || listObj.id;
+      const listIdStr = typeof listId === 'string' ? listId : listId.toString();
       const stats = statsMap.get(listIdStr) || { total: 0, completed: 0, tasks: [] };
 
       return {
