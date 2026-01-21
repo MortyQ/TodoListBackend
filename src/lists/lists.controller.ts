@@ -171,7 +171,7 @@ Regular users see only their lists, admins can see all lists or filter by owners
     status: 403,
     description: 'Access denied - not your list'
   })
-  async findOne(@Param('id') id: string, @Req() req: any) {
+  async findOne(@Param('listId') id: string, @Req() req: any) {
     return this.listsService.findOne(id, req.user.id, req.user.role);
   }
 
@@ -214,7 +214,7 @@ Regular users see only their lists, admins can see all lists or filter by owners
     status: 403,
     description: 'Access denied - not your list'
   })
-  async remove(@Param('id') id: string, @Req() req: any) {
+  async remove(@Param('listId') id: string, @Req() req: any) {
     await this.listsService.remove(id, req.user.id, req.user.role);
     return { message: 'List and all its tasks deleted successfully' };
   }
