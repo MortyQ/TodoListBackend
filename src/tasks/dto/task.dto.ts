@@ -2,6 +2,8 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsOptional, IsEnum, IsInt, IsArray, IsDateString, Length, Min } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { TaskStatus, TaskPriority } from '../schemas/task.schema';
+import { IntersectionType } from '@nestjs/swagger';
+import { TaskPaginationDto } from '../../common/dto/pagination.dto';
 
 // DTO for creating a new task
 export class CreateTaskDto {
@@ -275,3 +277,5 @@ export class TaskFiltersDto {
   @Transform(({ value }) => value === true || value === 'true')
   isStarred?: boolean;
 }
+
+export class TaskQueryDto extends IntersectionType(TaskPaginationDto, TaskFiltersDto) {}

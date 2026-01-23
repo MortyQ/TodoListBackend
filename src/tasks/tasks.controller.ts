@@ -1,8 +1,8 @@
 import { Controller, Get, Post, Patch, Delete, Body, Param, Query, UseGuards, Req } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { TasksService } from './tasks.service';
-import { CreateTaskDto, UpdateTaskDto, TaskFiltersDto } from './dto/task.dto';
-import { TaskPaginationDto } from '../common/dto/pagination.dto';
+import { CreateTaskDto, UpdateTaskDto, TaskQueryDto } from './dto/task.dto';
+
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../common/guards/permissions.guard';
 import { RequirePermission } from '../common/decorators/permissions.decorator';
@@ -186,16 +186,15 @@ Retrieve paginated list of tasks with advanced sorting, filtering and search.
   })
   async findAllInList(
     @Param('listId') listId: string,
-    @Query() paginationDto: TaskPaginationDto,
-    @Query() filtersDto: TaskFiltersDto,
+    @Query() query: TaskQueryDto,
     @Req() req: any,
   ) {
     return this.tasksService.findAllInList(
       listId,
       req.user.id,
       req.user.role,
-      paginationDto,
-      filtersDto,
+      query,
+      query,
     );
   }
 
