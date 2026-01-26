@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Patch, Delete, Body, Param, Query, UseGuards, Req } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { TasksService } from './tasks.service';
-import { CreateTaskDto, UpdateTaskDto, TaskQueryDto } from './dto/task.dto';
+import { CreateTaskDto, UpdateTaskDto, TaskQueryDto, CompleteTaskDto } from './dto/task.dto';
 
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../common/guards/permissions.guard';
@@ -223,14 +223,25 @@ Retrieve paginated list of tasks with advanced sorting, filtering and search.
     return this.tasksService.update(taskId, updateTaskDto, req.user.id, req.user.role);
   }
 
-  // Быстрое завершение задачи
+  // Переключение статуса завершенности задачи
   @Patch('/:taskId/complete')
   @RequirePermission(PERMISSIONS.UPDATE_TASK)
-  @ApiOperation({ summary: 'Mark task as completed' })
+  @ApiOperation({
+    summary: 'Toggle task completion status',
+    description: 'Set task as completed (true) or mark as todo (false). Body: { "completed": true }'
+  })
   @ApiResponse({
     status: 200,
-    description: 'Task marked as completed',
-    type: Task
+    description: 'Task completion status updated',
+    type: Task,
+    schema: {
+      example: {
+        id: '507f1f77bcf86cd799439011',
+        title: 'Write report',
+        status: 'done',
+        completedAt: '2024-12-20T10:30:00.000Z'
+      }
+    }
   })
   @ApiResponse({
     status: 404,
@@ -240,8 +251,12 @@ Retrieve paginated list of tasks with advanced sorting, filtering and search.
     status: 403,
     description: 'Access denied - task from another user list'
   })
-  async complete(@Param('taskId') taskId: string, @Req() req: any) {
-    return this.tasksService.complete(taskId, req.user.id, req.user.role);
+  async complete(
+    @Param('taskId') taskId: string,
+    @Body() completeTaskDto: CompleteTaskDto,
+    @Req() req: any
+  ) {
+    return this.tasksService.complete(taskId, completeTaskDto.completed, req.user.id, req.user.role);
   }
 
   // Получение важных (starred) задач из всех списков

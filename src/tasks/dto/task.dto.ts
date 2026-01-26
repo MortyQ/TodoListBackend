@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsOptional, IsEnum, IsInt, IsArray, IsDateString, Length, Min } from 'class-validator';
+import { IsString, IsOptional, IsEnum, IsInt, IsArray, IsDateString, IsBoolean, Length, Min } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { TaskStatus, TaskPriority } from '../schemas/task.schema';
 import { IntersectionType } from '@nestjs/swagger';
@@ -276,6 +276,17 @@ export class TaskFiltersDto {
   @IsOptional()
   @Transform(({ value }) => value === true || value === 'true')
   isStarred?: boolean;
+}
+
+// DTO for completing/uncompleting task
+export class CompleteTaskDto {
+  @ApiProperty({
+    description: 'Set task as completed (true) or mark as todo (false)',
+    example: true,
+    required: true
+  })
+  @IsBoolean({ message: 'Completed must be a boolean value' })
+  completed: boolean;
 }
 
 export class TaskQueryDto extends IntersectionType(TaskPaginationDto, TaskFiltersDto) {}

@@ -203,9 +203,10 @@ export class TasksService {
     return updatedTask;
   }
 
-  // Помечаем задачу как завершенную (удобный метод)
-  async complete(taskId: string, userId: string, userRole: string): Promise<Task> {
-    return this.update(taskId, { status: TaskStatus.DONE }, userId, userRole);
+  // Переключение статуса завершенности задачи
+  async complete(taskId: string, completed: boolean, userId: string, userRole: string): Promise<Task> {
+    const status = completed ? TaskStatus.DONE : TaskStatus.TODO;
+    return this.update(taskId, { status }, userId, userRole);
   }
 
   // Мягкое удаление задачи
