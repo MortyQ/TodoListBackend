@@ -15,7 +15,12 @@ export class TasksService {
   ) {}
 
   // Создание новой задачи в списке
-  async create(listId: string, createTaskDto: CreateTaskDto, userId: string, userRole: string): Promise<Task> {
+  async create(
+    listId: string,
+    createTaskDto: CreateTaskDto,
+    userId: string,
+    userRole: string,
+  ): Promise<Task> {
     // Проверяем, что список существует и пользователь имеет к нему доступ
     const list = await this.listModel.findById(listId);
     if (!list) {
@@ -55,7 +60,10 @@ export class TasksService {
     filtersDto: TaskFiltersDto,
   ) {
     // Проверяем доступ к списку
-    const list = await this.listModel.findById(listId);
+    const list = await this.listModel
+      .findById(listId)
+      .select('_id title ownerId deadline hexColor createdAt updatedAt');
+
     if (!list) {
       throw new NotFoundException('List not found');
     }
@@ -119,16 +127,12 @@ export class TasksService {
     }
 
     const [tasks, total] = await Promise.all([
-      this.taskModel
-        .find(filter)
-        .sort(sortOption)
-        .skip(offset)
-        .limit(limit)
-        .exec(),
+      this.taskModel.find(filter).sort(sortOption).skip(offset).limit(limit).exec(),
       this.taskModel.countDocuments(filter),
     ]);
 
     return {
+      listInfo: list,
       data: tasks,
       pagination: createPaginationMeta(total, limit, offset),
     };
@@ -136,12 +140,10 @@ export class TasksService {
 
   // Получение конкретной задачи
   async findOne(taskId: string, userId: string, userRole: string): Promise<Task> {
-    const task = await this.taskModel
-      .findOne({ _id: taskId, deletedAt: null })
-      .populate({
-        path: 'listId',
-        populate: { path: 'ownerId', select: 'email name' },
-      });
+    const task = await this.taskModel.findOne({ _id: taskId, deletedAt: null }).populate({
+      path: 'listId',
+      populate: { path: 'ownerId', select: 'email name' },
+    });
 
     if (!task) {
       throw new NotFoundException('Task not found');
@@ -157,10 +159,13 @@ export class TasksService {
   }
 
   // Обновление задачи
-  async update(taskId: string, updateTaskDto: UpdateTaskDto, userId: string, userRole: string): Promise<Task> {
-    const task = await this.taskModel
-      .findOne({ _id: taskId, deletedAt: null })
-      .populate('listId');
+  async update(
+    taskId: string,
+    updateTaskDto: UpdateTaskDto,
+    userId: string,
+    userRole: string,
+  ): Promise<Task> {
+    const task = await this.taskModel.findOne({ _id: taskId, deletedAt: null }).populate('listId');
 
     if (!task) {
       throw new NotFoundException('Task not found');
@@ -194,26 +199,27 @@ export class TasksService {
       updateData.deadline = new Date(updateTaskDto.deadline);
     }
 
-    const updatedTask = await this.taskModel.findByIdAndUpdate(
-      taskId,
-      updateData,
-      { new: true },
-    ).populate('listId');
+    const updatedTask = await this.taskModel
+      .findByIdAndUpdate(taskId, updateData, { new: true })
+      .populate('listId');
 
     return updatedTask;
   }
 
   // Переключение статуса завершенности задачи
-  async complete(taskId: string, completed: boolean, userId: string, userRole: string): Promise<Task> {
+  async complete(
+    taskId: string,
+    completed: boolean,
+    userId: string,
+    userRole: string,
+  ): Promise<Task> {
     const status = completed ? TaskStatus.DONE : TaskStatus.TODO;
     return this.update(taskId, { status }, userId, userRole);
   }
 
   // Мягкое удаление задачи
   async remove(taskId: string, userId: string, userRole: string): Promise<void> {
-    const task = await this.taskModel
-      .findOne({ _id: taskId, deletedAt: null })
-      .populate('listId');
+    const task = await this.taskModel.findOne({ _id: taskId, deletedAt: null }).populate('listId');
 
     if (!task) {
       throw new NotFoundException('Task not found');
@@ -234,21 +240,18 @@ export class TasksService {
   // Получение важных (starred) задач из всех списков пользователя
   async getStarredTasks(userId: string, userRole: string, limit: number = 10) {
     // Получаем все списки пользователя
-    const userLists = await this.listModel.find(
-      userRole === UserRole.ADMIN ? {} : { ownerId: userId }
-    ).select('_id');
+    const userLists = await this.listModel
+      .find(userRole === UserRole.ADMIN ? {} : { ownerId: userId })
+      .select('_id');
 
-    const listIds = userLists.map(list => list._id);
-    const listIdStrings = listIds.map(id => id.toString());
+    const listIds = userLists.map((list) => list._id);
+    const listIdStrings = listIds.map((id) => id.toString());
 
     // Ищем важные задачи из этих списков
     // Поддерживаем как ObjectId, так и строковые listId
     const starredTasks = await this.taskModel
       .find({
-        $or: [
-          { listId: { $in: listIds } },
-          { listId: { $in: listIdStrings } }
-        ],
+        $or: [{ listId: { $in: listIds } }, { listId: { $in: listIdStrings } }],
         isStarred: true,
         deletedAt: null,
       })
@@ -272,22 +275,19 @@ export class TasksService {
     endDate?: string,
   ) {
     // Получаем все списки пользователя
-    const userLists = await this.listModel.find(
-      userRole === UserRole.ADMIN ? {} : { ownerId: userId }
-    ).select('_id');
+    const userLists = await this.listModel
+      .find(userRole === UserRole.ADMIN ? {} : { ownerId: userId })
+      .select('_id');
 
-    const listIds = userLists.map(list => list._id);
-    const listIdStrings = listIds.map(id => id.toString());
+    const listIds = userLists.map((list) => list._id);
+    const listIdStrings = listIds.map((id) => id.toString());
 
     // Базовый фильтр - поддерживаем как ObjectId, так и строковые listId
     const filter: any = {
-      $or: [
-        { listId: { $in: listIds } },
-        { listId: { $in: listIdStrings } }
-      ],
+      $or: [{ listId: { $in: listIds } }, { listId: { $in: listIdStrings } }],
       deletedAt: null,
       deadline: { $exists: true, $ne: null }, // Только задачи с дедлайном
-      status: { $ne: TaskStatus.DONE } // Только невыполненные задачи (обычно дедлайны интересны для активных задач)
+      status: { $ne: TaskStatus.DONE }, // Только невыполненные задачи (обычно дедлайны интересны для активных задач)
     };
 
     // Добавляем фильтры по датам
@@ -312,7 +312,6 @@ export class TasksService {
       .limit(limit)
       .exec();
 
-
     return {
       data: tasks,
       total: tasks.length,
@@ -321,9 +320,7 @@ export class TasksService {
 
   // Переключение статуса isStarred для задачи
   async toggleStar(taskId: string, userId: string, userRole: string): Promise<Task> {
-    const task = await this.taskModel
-      .findOne({ _id: taskId, deletedAt: null })
-      .populate('listId');
+    const task = await this.taskModel.findOne({ _id: taskId, deletedAt: null }).populate('listId');
 
     if (!task) {
       throw new NotFoundException('Task not found');
@@ -336,11 +333,9 @@ export class TasksService {
     }
 
     // Переключаем статус
-    const updatedTask = await this.taskModel.findByIdAndUpdate(
-      taskId,
-      { isStarred: !task.isStarred },
-      { new: true },
-    ).populate('listId');
+    const updatedTask = await this.taskModel
+      .findByIdAndUpdate(taskId, { isStarred: !task.isStarred }, { new: true })
+      .populate('listId');
 
     return updatedTask;
   }
@@ -348,21 +343,18 @@ export class TasksService {
   // Получение целей на неделю (isWeeklyGoal=true)
   async getWeeklyGoals(userId: string, userRole: string) {
     // Получаем все списки пользователя
-    const userLists = await this.listModel.find(
-      userRole === UserRole.ADMIN ? {} : { ownerId: userId }
-    ).select('_id');
+    const userLists = await this.listModel
+      .find(userRole === UserRole.ADMIN ? {} : { ownerId: userId })
+      .select('_id');
 
-    const listIds = userLists.map(list => list._id);
-    const listIdStrings = listIds.map(id => id.toString());
+    const listIds = userLists.map((list) => list._id);
+    const listIdStrings = listIds.map((id) => id.toString());
 
     // Ищем задачи с флагом isWeeklyGoal
     // Поддерживаем как ObjectId, так и строковые listId
     const goals = await this.taskModel
       .find({
-        $or: [
-          { listId: { $in: listIds } },
-          { listId: { $in: listIdStrings } }
-        ],
+        $or: [{ listId: { $in: listIds } }, { listId: { $in: listIdStrings } }],
         isWeeklyGoal: true,
         deletedAt: null,
       })
@@ -378,9 +370,7 @@ export class TasksService {
 
   // Добавление задачи в цели недели
   async addWeeklyGoal(taskId: string, userId: string, userRole: string): Promise<Task> {
-    const task = await this.taskModel
-      .findOne({ _id: taskId, deletedAt: null })
-      .populate('listId');
+    const task = await this.taskModel.findOne({ _id: taskId, deletedAt: null }).populate('listId');
 
     if (!task) {
       throw new NotFoundException('Task not found');
@@ -395,19 +385,16 @@ export class TasksService {
     // Проверяем лимит (максимум 3 цели)
     if (!task.isWeeklyGoal) {
       // Ищем списки пользователя чтобы проверить общее количество целей
-      const userLists = await this.listModel.find(
-        userRole === UserRole.ADMIN ? {} : { ownerId: userId }
-      ).select('_id');
-      const listIds = userLists.map(l => l._id);
-      const listIdStrings = listIds.map(id => id.toString());
+      const userLists = await this.listModel
+        .find(userRole === UserRole.ADMIN ? {} : { ownerId: userId })
+        .select('_id');
+      const listIds = userLists.map((l) => l._id);
+      const listIdStrings = listIds.map((id) => id.toString());
 
       const count = await this.taskModel.countDocuments({
-        $or: [
-          { listId: { $in: listIds } },
-          { listId: { $in: listIdStrings } }
-        ],
+        $or: [{ listId: { $in: listIds } }, { listId: { $in: listIdStrings } }],
         isWeeklyGoal: true,
-        deletedAt: null
+        deletedAt: null,
       });
 
       if (count >= 3) {
@@ -416,20 +403,16 @@ export class TasksService {
     }
 
     // Обновляем задачу
-    const updatedTask = await this.taskModel.findByIdAndUpdate(
-      taskId,
-      { isWeeklyGoal: true },
-      { new: true },
-    ).populate('listId');
+    const updatedTask = await this.taskModel
+      .findByIdAndUpdate(taskId, { isWeeklyGoal: true }, { new: true })
+      .populate('listId');
 
     return updatedTask;
   }
 
   // Удаление задачи из целей недели
   async removeWeeklyGoal(taskId: string, userId: string, userRole: string): Promise<Task> {
-    const task = await this.taskModel
-      .findOne({ _id: taskId, deletedAt: null })
-      .populate('listId');
+    const task = await this.taskModel.findOne({ _id: taskId, deletedAt: null }).populate('listId');
 
     if (!task) {
       throw new NotFoundException('Task not found');
@@ -442,20 +425,16 @@ export class TasksService {
     }
 
     // Обновляем задачу
-    const updatedTask = await this.taskModel.findByIdAndUpdate(
-      taskId,
-      { isWeeklyGoal: false },
-      { new: true },
-    ).populate('listId');
+    const updatedTask = await this.taskModel
+      .findByIdAndUpdate(taskId, { isWeeklyGoal: false }, { new: true })
+      .populate('listId');
 
     return updatedTask;
   }
 
   // Переключение статуса isWeeklyGoal
   async toggleWeeklyGoal(taskId: string, userId: string, userRole: string): Promise<Task> {
-    const task = await this.taskModel
-      .findOne({ _id: taskId, deletedAt: null })
-      .populate('listId');
+    const task = await this.taskModel.findOne({ _id: taskId, deletedAt: null }).populate('listId');
 
     if (!task) {
       throw new NotFoundException('Task not found');
