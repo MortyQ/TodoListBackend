@@ -1,7 +1,7 @@
 import { Controller, Post, Get, Body, UseGuards, Req } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
-import { CreateUserDto, LoginDto, LoginResponseDto } from './dto/auth.dto';
+import { CreateUserDto, LoginDto, LoginResponseDto, RefreshTokenDto, RefreshTokenResponseDto } from './dto/auth.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { User } from '../users/schemas/user.schema';
 
@@ -56,5 +56,37 @@ export class AuthController {
   async getProfile(@Req() req: any): Promise<User> {
     // req.user устанавливается JWT Guard'ом после проверки токена
     return this.authService.getProfile(req.user.id);
+  }
+
+  @Post('refresh')
+  @ApiOperation({ summary: 'Refresh access token using refresh token' })
+  @ApiResponse({
+    status: 200,
+    description: 'Tokens refreshed successfully',
+    type: RefreshTokenResponseDto
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Invalid or expired refresh token'
+  })
+  async refresh(@Body() refreshTokenDto: RefreshTokenDto): Promise<RefreshTokenResponseDto> {
+    return this.authService.refresh(refreshTokenDto);
+  }
+
+  @Post('logout')
+  @UseGuards(JwtAuthGuard) // Требуется авторизация
+  @ApiBearerAuth() // Указываем, что нужен Bearer token в Swagger
+  @ApiOperation({ summary: 'Logout and invalidate refresh token' })
+  @ApiResponse({
+    status: 200,
+    description: 'Logged out successfully'
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized'
+  })
+  async logout(@Req() req: any): Promise<{ message: string }> {
+    await this.authService.logout(req.user.id);
+    return { message: 'Logged out successfully' };
   }
 }

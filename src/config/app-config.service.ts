@@ -31,6 +31,16 @@ export class AppConfigService {
     return expires === '0' ? undefined : expires;
   }
 
+  // JWT Refresh секрет
+  get jwtRefreshSecret(): string {
+    return this.configService.get<string>('JWT_REFRESH_SECRET', 'change-me-refresh');
+  }
+
+  // JWT Refresh время жизни
+  get jwtRefreshExpiresIn(): string {
+    return this.configService.get<string>('JWT_REFRESH_EXPIRES_IN', '7d');
+  }
+
   // CORS origins
   get corsOrigins(): string | string[] {
     const origins = this.configService.get<string>('CORS_ORIGINS', '*');

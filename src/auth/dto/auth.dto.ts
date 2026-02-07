@@ -49,8 +49,39 @@ export class LoginDto {
 // DTO для ответа при успешном логине
 export class LoginResponseDto {
   @ApiProperty({
-    description: 'JWT token for authorization',
+    description: 'JWT access token for authorization (short-lived)',
     example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
   })
   accessToken: string;
+
+  @ApiProperty({
+    description: 'JWT refresh token for obtaining new access tokens (long-lived)',
+    example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+  })
+  refreshToken: string;
+}
+
+// DTO для обновления токенов
+export class RefreshTokenDto {
+  @ApiProperty({
+    description: 'Refresh token obtained from login',
+    example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+  })
+  @IsString()
+  refreshToken: string;
+}
+
+// DTO для ответа при обновлении токенов
+export class RefreshTokenResponseDto {
+  @ApiProperty({
+    description: 'New JWT access token',
+    example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+  })
+  accessToken: string;
+
+  @ApiProperty({
+    description: 'New JWT refresh token',
+    example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+  })
+  refreshToken: string;
 }

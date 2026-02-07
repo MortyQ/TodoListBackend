@@ -45,6 +45,20 @@ export class User extends Document {
   })
   passwordHash: string;
 
+  // Хэш refresh token (не возвращается в API)
+  @Prop({
+    required: false,
+    select: false, // по умолчанию не включается в результаты запросов
+  })
+  refreshToken?: string;
+
+  // Дата истечения refresh token
+  @Prop({
+    required: false,
+    type: Date,
+  })
+  refreshTokenExpiresAt?: Date;
+
   @ApiProperty({
     description: 'User role',
     example: UserRole.USER,
@@ -95,6 +109,7 @@ export const UserSchema = SchemaFactory.createForClass(User);
 
 // Настраиваем индексы для оптимизации запросов
 UserSchema.index({ email: 1 }, { unique: true });
+UserSchema.index({ refreshTokenExpiresAt: 1 }); // для очистки устаревших refresh tokens
 
 // Добавляем виртуальные поля (если нужно)
 UserSchema.virtual('id').get(function () {
