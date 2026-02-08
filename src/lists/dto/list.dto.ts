@@ -80,10 +80,27 @@ export class ListResponseDto {
   title: string;
 
   @ApiProperty({
-    description: 'List owner ID',
-    example: '507f1f77bcf86cd799439012'
+    description: 'List owner information',
+    example: {
+      id: '507f1f77bcf86cd799439012',
+      email: 'user@example.com',
+      name: 'John Doe',
+      role: 'user'
+    },
+    type: 'object',
+    properties: {
+      id: { type: 'string' },
+      email: { type: 'string' },
+      name: { type: 'string' },
+      role: { type: 'string', enum: ['user', 'admin'] }
+    }
   })
-  ownerId: string;
+  owner: {
+    id: string;
+    email: string;
+    name: string;
+    role: string;
+  };
 
   @ApiProperty({
     description: 'List deadline',
@@ -125,14 +142,15 @@ export class ListResponseDto {
 
   @ApiProperty({
     description: 'Simplified tasks list',
-    example: [{ id: '507f1f77bcf86cd799439011', title: 'Buy milk', status: 'todo' }],
+    example: [{ id: '507f1f77bcf86cd799439011', title: 'Buy milk', status: 'todo', isWeeklyGoal: false }],
     type: 'array',
     items: {
       type: 'object',
       properties: {
         id: { type: 'string' },
         title: { type: 'string' },
-        status: { type: 'string' }
+        status: { type: 'string' },
+        isWeeklyGoal: { type: 'boolean' }
       }
     }
   })
@@ -140,5 +158,6 @@ export class ListResponseDto {
     id: string;
     title: string;
     status: string;
+    isWeeklyGoal: boolean;
   }[];
 }

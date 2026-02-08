@@ -57,6 +57,7 @@ Retrieve paginated list of tasks with advanced sorting, filtering and search.
 
 **Filter options:**
 - \`status\` - Filter by task status (todo, in_progress, done, archived)
+- \`priority\` - Filter by task priority (low, medium, high)
 - \`tag\` - Filter by tag name
 - \`isStarred\` - Filter starred/important tasks only
 - \`dueFrom\` / \`dueTo\` - Filter by due date range
@@ -64,6 +65,8 @@ Retrieve paginated list of tasks with advanced sorting, filtering and search.
 
 **Example requests:**
 - \`GET /tasks/lists/:id?sort=priority&order=desc\` - High priority tasks first
+- \`GET /tasks/lists/:id?priority=high\` - Only high priority tasks
+- \`GET /tasks/lists/:id?priority=high&status=todo\` - High priority todo tasks
 - \`GET /tasks/lists/:id?sort=deadline&order=asc&status=todo\` - Todo tasks by nearest deadline
 - \`GET /tasks/lists/:id?isStarred=true&sort=createdAt&order=desc\` - Starred tasks, newest first
 - \`GET /tasks/lists/:id?q=report&sort=title&order=asc\` - Search "report", sorted by title
@@ -102,6 +105,12 @@ Retrieve paginated list of tasks with advanced sorting, filtering and search.
     required: false,
     description: 'Filter by task status',
     schema: { type: 'string', enum: ['todo', 'in_progress', 'done', 'archived'] }
+  })
+  @ApiQuery({
+    name: 'priority',
+    required: false,
+    description: 'Filter by task priority',
+    schema: { type: 'string', enum: ['low', 'medium', 'high'] }
   })
   @ApiQuery({
     name: 'tag',

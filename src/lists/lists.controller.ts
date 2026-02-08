@@ -108,12 +108,13 @@ Regular users see only their lists, admins can see all lists or filter by owners
               id: { type: 'string', example: '507f1f77bcf86cd799439011' },
               title: { type: 'string', example: 'Work Tasks' },
               deadline: { type: 'string', format: 'date-time', example: '2024-12-31T23:59:59.000Z', nullable: true },
-              ownerId: {
+              owner: {
                 type: 'object',
                 properties: {
                   id: { type: 'string', example: '507f1f77bcf86cd799439011' },
                   email: { type: 'string', example: 'user@example.com' },
-                  name: { type: 'string', example: 'John Doe' }
+                  name: { type: 'string', example: 'John Doe' },
+                  role: { type: 'string', example: 'user', enum: ['user', 'admin'] }
                 }
               },
               createdAt: { type: 'string', format: 'date-time', example: '2024-12-01T10:00:00.000Z' },
@@ -124,13 +125,14 @@ Regular users see only their lists, admins can see all lists or filter by owners
               tasks: {
                 type: 'array',
                 description: 'Simplified tasks list',
-                example: [{ id: '507f1f77bcf86cd799439011', title: 'Buy milk', status: 'todo' }],
+                example: [{ id: '507f1f77bcf86cd799439011', title: 'Buy milk', status: 'todo', isWeeklyGoal: false }],
                 items: {
                   type: 'object',
                   properties: {
                     id: { type: 'string' },
                     title: { type: 'string' },
-                    status: { type: 'string' }
+                    status: { type: 'string' },
+                    isWeeklyGoal: { type: 'boolean' }
                   }
                 }
               }

@@ -63,7 +63,8 @@ export class ListsService {
             $push: {
               id: '$_id',
               title: '$title',
-              status: '$status'
+              status: '$status',
+              isWeeklyGoal: '$isWeeklyGoal'
             }
           }
         }
@@ -78,14 +79,31 @@ export class ListsService {
       const listObj = list.toObject ? list.toObject() : list;
       const stats = statsMap.get(listIdStr) || { total: 0, completed: 0, tasks: [] };
 
+      // Transform ownerId to owner object
+      const owner = listObj.ownerId
+        ? (typeof listObj.ownerId === 'object'
+            ? {
+                id: listObj.ownerId._id?.toString() || listObj.ownerId.id?.toString(),
+                email: listObj.ownerId.email,
+                name: listObj.ownerId.name,
+                role: listObj.ownerId.role
+              }
+            : { id: listObj.ownerId.toString(), email: null, name: null, role: null })
+        : null;
 
-      return {
+      const result = {
         ...listObj,
         id: listIdStr, // Добавляем id обратно, так как toJSON его удаляет
+        owner, // Replace ownerId with owner
         totalTasks: stats.total,
         completedTasks: stats.completed,
         tasks: stats.tasks || [],
       };
+
+      // Remove old ownerId field
+      delete result.ownerId;
+
+      return result;
     });
   }
 
@@ -143,7 +161,7 @@ export class ListsService {
         .sort(sortOption)
         .skip(offset)
         .limit(limit)
-        .populate('ownerId', 'email name') // подгружаем информацию о владельце
+        .populate('ownerId', 'email name role') // подгружаем информацию о владельце с ролью
         .exec(),
       this.listModel.countDocuments(filter),
     ]);
@@ -160,7 +178,7 @@ export class ListsService {
   async findOne(id: string, userId: string, userRole: string): Promise<any> {
     const list = await this.listModel
       .findById(id)
-      .populate('ownerId', 'email name');
+      .populate('ownerId', 'email name role');
 
     if (!list) {
       throw new NotFoundException('List not found');
@@ -200,7 +218,7 @@ export class ListsService {
       id,
       updateData,
       { new: true },
-    ).populate('ownerId', 'email name');
+    ).populate('ownerId', 'email name role');
 
     const [enrichedList] = await this.enrichListsWithTaskCounts([updatedList]);
     return enrichedList;

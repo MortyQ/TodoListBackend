@@ -73,7 +73,7 @@ export class TasksService {
     }
 
     const { limit, offset, sort, order } = paginationDto;
-    const { status, tag, dueFrom, dueTo, q, isStarred } = filtersDto;
+    const { status, priority, tag, dueFrom, dueTo, q, isStarred } = filtersDto;
 
     // Строим фильтр для поиска
     const filter: any = {
@@ -84,6 +84,10 @@ export class TasksService {
     // Применяем фильтры
     if (status) {
       filter.status = status;
+    }
+
+    if (priority) {
+      filter.priority = priority;
     }
 
     if (tag) {

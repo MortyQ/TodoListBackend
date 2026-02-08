@@ -233,6 +233,16 @@ export class TaskFiltersDto {
   status?: TaskStatus;
 
   @ApiProperty({
+    description: 'Filter by priority',
+    example: TaskPriority.HIGH,
+    enum: TaskPriority,
+    required: false
+  })
+  @IsOptional()
+  @IsEnum(TaskPriority, { message: 'Invalid task priority' })
+  priority?: TaskPriority;
+
+  @ApiProperty({
     description: 'Filter by tag',
     example: 'work',
     required: false
