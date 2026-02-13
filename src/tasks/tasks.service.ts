@@ -244,12 +244,9 @@ export class TasksService {
   // Получение важных (starred) задач из всех списков пользователя
   async getStarredTasks(userId: string, userRole: string, limit: number = 10) {
     // Получаем только списки текущего пользователя (не всех, даже для ADMIN)
-    // ВАЖНО: преобразуем userId в ObjectId для корректного поиска
-    const { Types } = require('mongoose');
-    const userObjectId = new Types.ObjectId(userId);
-
+    // ВАЖНО: В базе ownerId хранится как строка, поэтому используем строковый поиск
     const userLists = await this.listModel
-      .find({ ownerId: userObjectId })
+      .find({ ownerId: userId })
       .select('_id');
 
     if (userLists.length === 0) {
@@ -260,11 +257,12 @@ export class TasksService {
     }
 
     const listIds = userLists.map((list) => list._id);
+    const listIdStrings = listIds.map((id) => id.toString());
 
     // Ищем важные задачи из этих списков
     const starredTasks = await this.taskModel
       .find({
-        listId: { $in: listIds },
+        listId: { $in: [...listIds, ...listIdStrings] },
         isStarred: true,
         deletedAt: null,
       })
@@ -288,13 +286,11 @@ export class TasksService {
     endDate?: string,
   ) {
     // Получаем только списки текущего пользователя (не всех, даже для ADMIN)
-    // ВАЖНО: преобразуем userId в ObjectId для корректного поиска
-    const { Types } = require('mongoose');
-    const userObjectId = new Types.ObjectId(userId);
-
+    // ВАЖНО: В базе ownerId хранится как строка, поэтому используем строковый поиск
     const userLists = await this.listModel
-      .find({ ownerId: userObjectId })
-      .select('_id');
+      .find({ ownerId: userId })
+      .select('_id ownerId title');
+
 
     if (userLists.length === 0) {
       return {
@@ -304,16 +300,15 @@ export class TasksService {
     }
 
     const listIds = userLists.map((list) => list._id);
+    const listIdStrings = listIds.map((id) => id.toString());
 
-    // Базовый фильтр
     const filter: any = {
-      listId: { $in: listIds },
+      listId: { $in: [...listIds, ...listIdStrings] },
       deletedAt: null,
       deadline: { $exists: true, $ne: null }, // Только задачи с дедлайном
       status: { $ne: TaskStatus.DONE }, // Только невыполненные задачи (обычно дедлайны интересны для активных задач)
     };
 
-    // Добавляем фильтры по датам
     if (startDate || endDate) {
       const deadlineFilter: any = { $exists: true, $ne: null };
       if (startDate) {
@@ -325,7 +320,8 @@ export class TasksService {
       filter.deadline = deadlineFilter;
     } else {
       // По умолчанию возвращаем предстоящие дедлайны (от сегодня)
-      filter.deadline = { $exists: true, $ne: null, $gte: new Date() };
+      const today = new Date();
+      filter.deadline = { $exists: true, $ne: null, $gte: today };
     }
 
     const tasks = await this.taskModel
@@ -334,6 +330,7 @@ export class TasksService {
       .sort({ deadline: 1, priority: -1 }) // Сортируем: ближайший дедлайн, потом приоритет
       .limit(limit)
       .exec();
+
 
     return {
       data: tasks,
@@ -366,12 +363,9 @@ export class TasksService {
   // Получение целей на неделю (isWeeklyGoal=true)
   async getWeeklyGoals(userId: string, userRole: string) {
     // Получаем только списки текущего пользователя (не всех, даже для ADMIN)
-    // ВАЖНО: преобразуем userId в ObjectId для корректного поиска
-    const { Types } = require('mongoose');
-    const userObjectId = new Types.ObjectId(userId);
-
+    // ВАЖНО: В базе ownerId хранится как строка, поэтому используем строковый поиск
     const userLists = await this.listModel
-      .find({ ownerId: userObjectId })
+      .find({ ownerId: userId })
       .select('_id');
 
     if (userLists.length === 0) {
@@ -382,11 +376,12 @@ export class TasksService {
     }
 
     const listIds = userLists.map((list) => list._id);
+    const listIdStrings = listIds.map((id) => id.toString());
 
     // Ищем задачи с флагом isWeeklyGoal
     const goals = await this.taskModel
       .find({
-        listId: { $in: listIds },
+        listId: { $in: [...listIds, ...listIdStrings] },
         isWeeklyGoal: true,
         deletedAt: null,
       })
@@ -417,16 +412,15 @@ export class TasksService {
     // Проверяем лимит (максимум 3 цели)
     if (!task.isWeeklyGoal) {
       // Ищем списки пользователя чтобы проверить общее количество целей
-      const { Types } = require('mongoose');
-      const userObjectId = new Types.ObjectId(userId);
-
+      // ВАЖНО: В базе ownerId хранится как строка, поэтому используем строковый поиск
       const userLists = await this.listModel
-        .find({ ownerId: userObjectId })
+        .find({ ownerId: userId })
         .select('_id');
       const listIds = userLists.map((l) => l._id);
+      const listIdStrings = listIds.map((id) => id.toString());
 
       const count = await this.taskModel.countDocuments({
-        listId: { $in: listIds },
+        listId: { $in: [...listIds, ...listIdStrings] },
         isWeeklyGoal: true,
         deletedAt: null,
       });
