@@ -244,8 +244,12 @@ export class TasksService {
   // Получение важных (starred) задач из всех списков пользователя
   async getStarredTasks(userId: string, userRole: string, limit: number = 10) {
     // Получаем только списки текущего пользователя (не всех, даже для ADMIN)
+    // ВАЖНО: преобразуем userId в ObjectId для корректного поиска
+    const { Types } = require('mongoose');
+    const userObjectId = new Types.ObjectId(userId);
+
     const userLists = await this.listModel
-      .find({ ownerId: userId })
+      .find({ ownerId: userObjectId })
       .select('_id');
 
     if (userLists.length === 0) {
@@ -256,13 +260,11 @@ export class TasksService {
     }
 
     const listIds = userLists.map((list) => list._id);
-    const listIdStrings = listIds.map((id) => id.toString());
 
     // Ищем важные задачи из этих списков
-    // Поддерживаем как ObjectId, так и строковые listId
     const starredTasks = await this.taskModel
       .find({
-        $or: [{ listId: { $in: listIds } }, { listId: { $in: listIdStrings } }],
+        listId: { $in: listIds },
         isStarred: true,
         deletedAt: null,
       })
@@ -286,8 +288,12 @@ export class TasksService {
     endDate?: string,
   ) {
     // Получаем только списки текущего пользователя (не всех, даже для ADMIN)
+    // ВАЖНО: преобразуем userId в ObjectId для корректного поиска
+    const { Types } = require('mongoose');
+    const userObjectId = new Types.ObjectId(userId);
+
     const userLists = await this.listModel
-      .find({ ownerId: userId })
+      .find({ ownerId: userObjectId })
       .select('_id');
 
     if (userLists.length === 0) {
@@ -298,11 +304,10 @@ export class TasksService {
     }
 
     const listIds = userLists.map((list) => list._id);
-    const listIdStrings = listIds.map((id) => id.toString());
 
-    // Базовый фильтр - поддерживаем как ObjectId, так и строковые listId
+    // Базовый фильтр
     const filter: any = {
-      $or: [{ listId: { $in: listIds } }, { listId: { $in: listIdStrings } }],
+      listId: { $in: listIds },
       deletedAt: null,
       deadline: { $exists: true, $ne: null }, // Только задачи с дедлайном
       status: { $ne: TaskStatus.DONE }, // Только невыполненные задачи (обычно дедлайны интересны для активных задач)
@@ -361,8 +366,12 @@ export class TasksService {
   // Получение целей на неделю (isWeeklyGoal=true)
   async getWeeklyGoals(userId: string, userRole: string) {
     // Получаем только списки текущего пользователя (не всех, даже для ADMIN)
+    // ВАЖНО: преобразуем userId в ObjectId для корректного поиска
+    const { Types } = require('mongoose');
+    const userObjectId = new Types.ObjectId(userId);
+
     const userLists = await this.listModel
-      .find({ ownerId: userId })
+      .find({ ownerId: userObjectId })
       .select('_id');
 
     if (userLists.length === 0) {
@@ -373,13 +382,11 @@ export class TasksService {
     }
 
     const listIds = userLists.map((list) => list._id);
-    const listIdStrings = listIds.map((id) => id.toString());
 
     // Ищем задачи с флагом isWeeklyGoal
-    // Поддерживаем как ObjectId, так и строковые listId
     const goals = await this.taskModel
       .find({
-        $or: [{ listId: { $in: listIds } }, { listId: { $in: listIdStrings } }],
+        listId: { $in: listIds },
         isWeeklyGoal: true,
         deletedAt: null,
       })
@@ -410,14 +417,16 @@ export class TasksService {
     // Проверяем лимит (максимум 3 цели)
     if (!task.isWeeklyGoal) {
       // Ищем списки пользователя чтобы проверить общее количество целей
+      const { Types } = require('mongoose');
+      const userObjectId = new Types.ObjectId(userId);
+
       const userLists = await this.listModel
-        .find({ ownerId: userId })
+        .find({ ownerId: userObjectId })
         .select('_id');
       const listIds = userLists.map((l) => l._id);
-      const listIdStrings = listIds.map((id) => id.toString());
 
       const count = await this.taskModel.countDocuments({
-        $or: [{ listId: { $in: listIds } }, { listId: { $in: listIdStrings } }],
+        listId: { $in: listIds },
         isWeeklyGoal: true,
         deletedAt: null,
       });
