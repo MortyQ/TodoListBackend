@@ -243,10 +243,17 @@ export class TasksService {
 
   // Получение важных (starred) задач из всех списков пользователя
   async getStarredTasks(userId: string, userRole: string, limit: number = 10) {
-    // Получаем все списки пользователя
+    // Получаем только списки текущего пользователя (не всех, даже для ADMIN)
     const userLists = await this.listModel
-      .find(userRole === UserRole.ADMIN ? {} : { ownerId: userId })
+      .find({ ownerId: userId })
       .select('_id');
+
+    if (userLists.length === 0) {
+      return {
+        data: [],
+        total: 0,
+      };
+    }
 
     const listIds = userLists.map((list) => list._id);
     const listIdStrings = listIds.map((id) => id.toString());
@@ -278,10 +285,17 @@ export class TasksService {
     startDate?: string,
     endDate?: string,
   ) {
-    // Получаем все списки пользователя
+    // Получаем только списки текущего пользователя (не всех, даже для ADMIN)
     const userLists = await this.listModel
-      .find(userRole === UserRole.ADMIN ? {} : { ownerId: userId })
+      .find({ ownerId: userId })
       .select('_id');
+
+    if (userLists.length === 0) {
+      return {
+        data: [],
+        total: 0,
+      };
+    }
 
     const listIds = userLists.map((list) => list._id);
     const listIdStrings = listIds.map((id) => id.toString());
@@ -346,10 +360,17 @@ export class TasksService {
 
   // Получение целей на неделю (isWeeklyGoal=true)
   async getWeeklyGoals(userId: string, userRole: string) {
-    // Получаем все списки пользователя
+    // Получаем только списки текущего пользователя (не всех, даже для ADMIN)
     const userLists = await this.listModel
-      .find(userRole === UserRole.ADMIN ? {} : { ownerId: userId })
+      .find({ ownerId: userId })
       .select('_id');
+
+    if (userLists.length === 0) {
+      return {
+        data: [],
+        total: 0,
+      };
+    }
 
     const listIds = userLists.map((list) => list._id);
     const listIdStrings = listIds.map((id) => id.toString());
@@ -390,7 +411,7 @@ export class TasksService {
     if (!task.isWeeklyGoal) {
       // Ищем списки пользователя чтобы проверить общее количество целей
       const userLists = await this.listModel
-        .find(userRole === UserRole.ADMIN ? {} : { ownerId: userId })
+        .find({ ownerId: userId })
         .select('_id');
       const listIds = userLists.map((l) => l._id);
       const listIdStrings = listIds.map((id) => id.toString());
