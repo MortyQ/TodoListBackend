@@ -25,7 +25,8 @@ export class AnalyticsService {
       // Находим ID списков пользователя
       const userLists = await this.listModel.find({ ownerId: userId }).select('_id');
       const listIds = userLists.map(list => list._id);
-      taskFilter.listId = { $in: listIds };
+      const listIdStrings = listIds.map(id => id.toString());
+      taskFilter.listId = { $in: [...listIds, ...listIdStrings] };
     }
 
     const [
@@ -64,7 +65,8 @@ export class AnalyticsService {
     if (userRole !== UserRole.ADMIN) {
       const userLists = await this.listModel.find({ ownerId: userId }).select('_id');
       const listIds = userLists.map(list => list._id);
-      matchStage.listId = { $in: listIds };
+      const listIdStrings = listIds.map(id => id.toString());
+      matchStage.listId = { $in: [...listIds, ...listIdStrings] };
     }
 
     const tags = await this.taskModel.aggregate([
@@ -75,6 +77,8 @@ export class AnalyticsService {
       { $limit: limit },
       { $project: { tag: '$_id', count: 1, _id: 0 } }
     ]);
+
+    return tags;
   }
 
   async getTasksByPriority(userId: string, userRole: string) {
@@ -83,7 +87,8 @@ export class AnalyticsService {
     if (userRole !== UserRole.ADMIN) {
       const userLists = await this.listModel.find({ ownerId: userId }).select('_id');
       const listIds = userLists.map(list => list._id);
-      matchStage.listId = { $in: listIds };
+      const listIdStrings = listIds.map(id => id.toString());
+      matchStage.listId = { $in: [...listIds, ...listIdStrings] };
     }
 
     return this.taskModel.aggregate([
@@ -99,7 +104,8 @@ export class AnalyticsService {
     if (userRole !== UserRole.ADMIN) {
       const userLists = await this.listModel.find({ ownerId: userId }).select('_id');
       const listIds = userLists.map(list => list._id);
-      filter.listId = { $in: listIds };
+      const listIdStrings = listIds.map(id => id.toString());
+      filter.listId = { $in: [...listIds, ...listIdStrings] };
     }
 
     return this.taskModel.find(filter)
@@ -126,7 +132,8 @@ export class AnalyticsService {
     if (userRole !== UserRole.ADMIN) {
       const userLists = await this.listModel.find({ ownerId: userId }).select('_id');
       const listIds = userLists.map(list => list._id);
-      matchStage.listId = { $in: listIds };
+      const listIdStrings = listIds.map(id => id.toString());
+      matchStage.listId = { $in: [...listIds, ...listIdStrings] };
     }
 
     // Helper to group by date
