@@ -40,24 +40,6 @@ export class AuthController {
     return this.authService.login(loginDto);
   }
 
-  @Get('profile')
-  @UseGuards(JwtAuthGuard) // Требуется авторизация
-  @ApiBearerAuth() // Указываем, что нужен Bearer token в Swagger
-  @ApiOperation({ summary: 'Get current user profile' })
-  @ApiResponse({
-    status: 200,
-    description: 'User profile',
-    type: User
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Unauthorized'
-  })
-  async getProfile(@Req() req: any): Promise<User> {
-    // req.user устанавливается JWT Guard'ом после проверки токена
-    return this.authService.getProfile(req.user.id);
-  }
-
   @Post('refresh')
   @ApiOperation({ summary: 'Refresh access token using refresh token' })
   @ApiResponse({
